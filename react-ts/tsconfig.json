@@ -19,10 +19,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "src",
+    "baseUrl": ".",
     "experimentalDecorators": true,
     "downlevelIteration": true
   },
+  "extends": "./base-tsconfig.json",
   "include": [
     "src",
     "global.d.ts"
