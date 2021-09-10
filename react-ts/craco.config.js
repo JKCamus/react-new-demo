@@ -5,6 +5,7 @@ const resolve = (dir) => path.resolve(__dirname, dir); //dirname 目录路径
 
 const CracoLessPlugin = require('craco-less');
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
+
 const smp = new SpeedMeasurePlugin();
 
 // 去除sourceMap
@@ -22,17 +23,21 @@ module.exports = {
       store: resolve('src/store'),
       utils: resolve('src/utils'),
     },
-    resolve: {
-      modules: [
-        // 指定以下目录寻找第三方模块，避免webpack往父级目录递归搜索
-        resolve('src'),
-        resolve('node_modules'),
-      ],
-      // 配置匹配文件后缀名eg:对于引入jsx文件，可以不填写后缀名也可以找到
-      // extensions: [".wasm", ".mjs", ".js", ".json", ".jsx", ".ts", ".vue"],
-      alias: {
-        '@': resolve('src'), // 缓存src目录为@符号，避免重复寻址
-        pages: resolve('./src/pages'),
+    configure: {
+      module: {
+        rules: [
+          {
+            test: /\.jsx?$/,
+            exclude: /node_modules/,
+            use: ['cache-loader', 'babel-loader'],
+          },
+          {
+            test: /\.ts$/,
+            exclude: /node_modules/,
+            // 本质上是依赖于typescript(typescript compiler)
+            use: ['cache-loader', 'babel-loader'],
+          },
+        ],
       },
     },
   }),
@@ -50,9 +55,6 @@ module.exports = {
         },
       },
     },
-    // {
-    //   plugin: new ReactRefreshWebpackPlugin(),
-    // },
   ],
   devServer: {
     hot: true,
