@@ -1,6 +1,9 @@
 import { Layout, Menu } from 'antd';
 import React, { useState } from 'react';
 import { HomeWrapper } from './styles';
+import { AsyncUnMount } from 'pages/Enjoy';
+import { NavLink, Route, Switch } from 'react-router-dom';
+
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -19,7 +22,7 @@ const Home: React.FC = (props) => {
           <div className="logo" />
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             <Menu.Item key="1" icon={<UserOutlined />}>
-              nav 1
+              <NavLink to="/home/enjoy"> enjoy</NavLink>
             </Menu.Item>
             <Menu.Item key="2" icon={<VideoCameraOutlined />}>
               nav 2
@@ -44,7 +47,11 @@ const Home: React.FC = (props) => {
               minHeight: 280,
             }}
           >
-            Content
+            <NavLink to="/home/AsyncUnMount"> AsyncUnMount</NavLink>
+
+            <Switch>
+              <Route exact key="/home/AsyncUnMount" path={'/home/AsyncUnMount'} component={AsyncUnMount}></Route>
+            </Switch>
           </Content>
         </Layout>
       </Layout>

@@ -4,7 +4,7 @@
  * @Author: camus
  * @Date: 2021-09-07 16:30:27
  * @LastEditors: camus
- * @LastEditTime: 2021-09-07 16:50:57
+ * @LastEditTime: 2021-09-11 10:24:27
  */
 import React from 'react';
 import { Redirect, Route, RouteChildrenProps } from 'react-router-dom';
@@ -37,7 +37,6 @@ const routes: BaseRoute[] = [
   {
     path: '/home',
     component: Home,
-    exact: true,
   },
 ];
 
