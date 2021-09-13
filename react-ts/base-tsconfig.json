@@ -12,7 +12,8 @@
     },
     "target": "ES6",
     "module": "commonjs",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": false
   },
   "strict": false
 }

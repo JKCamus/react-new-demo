@@ -37,6 +37,11 @@ module.exports = {
             // 本质上是依赖于typescript(typescript compiler)
             use: ['cache-loader', 'babel-loader'],
           },
+          {
+            test: /\.tsx?$/,
+            exclude: /node_modules/,
+            use: ['cache-loader', 'babel-loader'],
+          },
         ],
       },
     },
