@@ -4,7 +4,7 @@
  * @Author: camus
  * @Date: 2021-09-13 16:34:08
  * @LastEditors: camus
- * @LastEditTime: 2021-09-13 17:41:21
+ * @LastEditTime: 2021-09-14 11:46:50
  */
 
 type ActionMap<M extends { [index: string]: any }> = {
@@ -37,13 +37,18 @@ interface Pet {
   voice: string;
   avatar: string;
 }
-
-export type PetActions = ActionMap<PetPayLoad>[keyof ActionMap<PetPayLoad>];
-
 const petsDB = {
   dogs: { name: 'Dogs', voice: 'Woof!', avatar: '🐶' },
   cats: { name: 'Cats', voice: 'Miauuu', avatar: '🐱' },
 };
+
+interface InitialState {
+  loading: boolean;
+  selectedPet: keyof typeof petsDB | '';
+  petData: string[] | null;
+}
+
+export type PetActions = ActionMap<PetPayLoad>[keyof ActionMap<PetPayLoad>];
 
 const getData = (type: keyof typeof petsDB): Promise<Pet> => {
   return new Promise((resolve) => {
@@ -53,22 +58,24 @@ const getData = (type: keyof typeof petsDB): Promise<Pet> => {
   });
 };
 
+const initialState = { loading: false, selectedPet: '', petData: null };
+
 const petsReducer = (state: any, action: PetActions) => {
   switch (action.type) {
-    case 'PET_SELECTED': {
+    case Types.PetSelected: {
       return {
         ...state,
         selectedPet: action.payload,
       };
     }
-    case 'FETCH_PET': {
+    case Types.FetchPet: {
       return {
         ...state,
         loading: true,
         petData: null,
       };
     }
-    case 'FETCH_PET_SUCCESS': {
+    case Types.FetchPetSuccess: {
       return {
         ...state,
         loading: false,
@@ -76,15 +83,14 @@ const petsReducer = (state: any, action: PetActions) => {
       };
     }
 
-    case 'RESET': {
+    case Types.Rest: {
       return initialState;
     }
 
     default:
-      throw new Error(`Not supported action ${action.type}`);
+      const exhaustiveCheck: never = action;
+      throw new Error(`Not supported action ${exhaustiveCheck}`);
   }
 };
-
-const initialState = { loading: false, selectedPet: '', petData: null };
 
 export { getData, petsReducer, initialState };
