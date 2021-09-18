@@ -6,3 +6,5 @@
 // export { default } from …;
 
 export { default as AsyncUnMount } from './components/AsyncUnMount';
+export { default as SlotDemo } from './components/SlotDemo';
+export { Verify } from './components/Verify';
