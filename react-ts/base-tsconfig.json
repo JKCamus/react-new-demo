@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "isolatedModules": false,
     "baseUrl": ".",
     "jsx": "react",
     "paths": {
@@ -12,8 +13,7 @@
     },
     "target": "ES6",
     "module": "commonjs",
-    "allowSyntheticDefaultImports": true,
-    "isolatedModules": false
+    "allowSyntheticDefaultImports": true
   },
   "strict": false
 }
