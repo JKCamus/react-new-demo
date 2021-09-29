@@ -4,10 +4,9 @@
  * @Author: camus
  * @Date: 2021-09-17 16:08:31
  * @LastEditors: camus
- * @LastEditTime: 2021-09-17 16:18:34
+ * @LastEditTime: 2021-09-29 15:00:01
  */
 import { ReactNode } from 'react';
-
 export interface IVerifyProp {
   /**
    * @description   canvas宽度
