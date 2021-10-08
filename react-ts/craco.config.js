@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 
-const resolve = (dir) => path.resolve(__dirname, dir); //dirname 目录路径
+const resolve = (dir) => path.resolve(__dirname, dir); // dirname 目录路径
 
 const CracoLessPlugin = require('craco-less');
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
@@ -65,7 +65,7 @@ module.exports = {
     hot: true,
     historyApiFallback: true,
     compress: true,
-    hotOnly: true, //错误修改后不刷新整个页面
+    hotOnly: true, // 错误修改后不刷新整个页面
     overlay: {
       warnings: true,
       errors: true,
