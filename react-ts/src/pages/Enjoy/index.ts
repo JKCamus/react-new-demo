@@ -8,3 +8,4 @@
 export { default as AsyncUnMount } from './components/AsyncUnMount';
 export { default as SlotDemo } from './components/SlotDemo';
 export { Verify } from './components/Verify';
+export { default as ReducerDemo } from './components/StateWhen';
