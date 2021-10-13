@@ -4,7 +4,7 @@
  * @Author: camus
  * @Date: 2021-09-13 16:34:08
  * @LastEditors: camus
- * @LastEditTime: 2021-09-14 11:46:50
+ * @LastEditTime: 2021-09-29 11:37:58
  */
 
 type ActionMap<M extends { [index: string]: any }> = {
@@ -25,12 +25,12 @@ export enum Types {
   Rest = 'RESET',
 }
 
-type PetPayLoad = {
+interface PetPayLoad {
   [Types.PetSelected]: string;
   [Types.FetchPet]: undefined;
   [Types.FetchPetSuccess]: Pet;
   [Types.Rest]: undefined;
-};
+}
 
 interface Pet {
   name: string;
@@ -88,8 +88,11 @@ const petsReducer = (state: any, action: PetActions) => {
     }
 
     default:
-      const exhaustiveCheck: never = action;
-      throw new Error(`Not supported action ${exhaustiveCheck}`);
+      return ((e: never) => {
+        throw new Error(e);
+      })(action);
+    // const exhaustiveCheck: never = action;
+    // throw new Error(`Not supported action ${exhaustiveCheck}`);
   }
 };
 
