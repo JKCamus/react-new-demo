@@ -4,7 +4,7 @@
  * @Author: camus
  * @Date: 2021-09-13 16:38:56
  * @LastEditors: camus
- * @LastEditTime: 2021-09-14 14:13:03
+ * @LastEditTime: 2021-09-29 11:25:11
  */
 import React, { useEffect, useReducer } from 'react';
 import { initialState, petsReducer, getData, Types } from './utils';
@@ -37,7 +37,7 @@ const SelectPets: React.FC = (props) => {
 
   return (
     <div>
-      <Select placeholder={'Select a pet'} onChange={onChange}>
+      <Select placeholder="Select a pet" onChange={onChange}>
         <Option value="cats">Cats</Option>
         <Option value="dogs">Dogs</Option>
       </Select>

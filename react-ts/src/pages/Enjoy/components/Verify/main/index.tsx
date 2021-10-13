@@ -4,7 +4,7 @@
  * @Author: camus
  * @Date: 2021-09-17 16:06:56
  * @LastEditors: camus
- * @LastEditTime: 2021-09-18 15:20:34
+ * @LastEditTime: 2021-10-13 16:47:50
  */
 import { RedoOutlined } from '@ant-design/icons';
 import React, { useEffect, useRef, useState } from 'react';
@@ -41,6 +41,7 @@ const Verify: React.FC<IVerifyProp> = ({
   const PI = Math.PI;
   const L = l + r * 2 + 3; // 滑块实际边长
 
+  // eslint-disable-next-line
   const drawPath = (ctx: any, x: number, y: number, operation: 'fill' | 'clip') => {
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -62,8 +63,7 @@ const Verify: React.FC<IVerifyProp> = ({
   const getRandomImgSrc = () => {
     return imgUrl || `https://picsum.photos/id/${getRandomNumberByRange(0, 1084)}/${width}/${height}`;
   };
-
-  const createImg = (onload: VoidFunction) => {
+  const createImg = (onload: () => void) => {
     const img = new Image();
     img.crossOrigin = 'Anonymous';
     img.onload = onload;
@@ -150,7 +150,8 @@ const Verify: React.FC<IVerifyProp> = ({
     const average = arr.reduce(sum) / arr.length;
     const deviations = arr.map((x) => x - average);
     const stddev = Math.sqrt(deviations.map(square).reduce(sum) / arr.length);
-    const left = parseInt(blockRef.current.style.left);
+
+    const left = parseInt(blockRef?.current?.style?.left, 10);
     return {
       spliced: Math.abs(left - xRef.current) < 10,
       verified: stddev !== 0, // 简单验证拖动轨迹，为零时表示Y轴上下没有波动，可能非人为操作
@@ -198,7 +199,9 @@ const Verify: React.FC<IVerifyProp> = ({
     } else {
       setSliderClass('sliderContainer sliderContainer_fail');
       typeof onFail === 'function' && onFail();
-      setTimeout(reset.bind(this), 1000);
+      setTimeout(() => {
+        reset();
+      }, 1000);
     }
   };
 
@@ -222,7 +225,7 @@ const Verify: React.FC<IVerifyProp> = ({
       onTouchEnd={handleDragEnd}
     >
       <div className="canvasArea">
-        <canvas ref={canvasRef} width={width} height={height}></canvas>
+        <canvas ref={canvasRef} width={width} height={height} />
         <canvas
           ref={blockRef}
           className="block"
@@ -230,7 +233,7 @@ const Verify: React.FC<IVerifyProp> = ({
           height={height}
           onMouseDown={handleDragStart}
           onTouchStart={handleDragStart}
-        ></canvas>
+        />
       </div>
       <div
         className={sliderClass}
@@ -252,7 +255,7 @@ const Verify: React.FC<IVerifyProp> = ({
         <div className="sliderText">{textTip}</div>
       </div>
       {/* <RedoOutlined onClick={handleRefresh} /> */}
-      <div className="refreshIcon" onClick={handleRefresh} style={{ backgroundImage: `url(${refreshIcon})` }}></div>
+      <div className="refreshIcon" onClick={handleRefresh} style={{ backgroundImage: `url(${refreshIcon})` }} />
       <div
         className="loadingContainer"
         style={{
@@ -261,7 +264,7 @@ const Verify: React.FC<IVerifyProp> = ({
           display: isLoading ? '' : 'none',
         }}
       >
-        <div className="loadingIcon"></div>
+        <div className="loadingIcon" />
         <span>加载中...</span>
       </div>
     </VerifyWrapper>
