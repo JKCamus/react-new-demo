@@ -4,11 +4,10 @@
  * @Author: camus
  * @Date: 2021-09-07 16:30:27
  * @LastEditors: camus
- * @LastEditTime: 2021-09-29 14:09:43
+ * @LastEditTime: 2021-10-14 14:58:46
  */
 import React from 'react';
 import { Redirect, Route, RouteChildrenProps } from 'react-router-dom';
-import NotFound from 'components/NotFound';
 import Home from 'pages/Home';
 
 interface RouteComponent extends RouteChildrenProps<any> {

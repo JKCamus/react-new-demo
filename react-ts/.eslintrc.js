@@ -1,3 +1,11 @@
+/*
+ * @Description:
+ * @version:
+ * @Author: camus
+ * @Date: 2021-10-14 15:18:57
+ * @LastEditors: camus
+ * @LastEditTime: 2021-10-14 15:18:58
+ */
 module.exports = {
   globals: {
     __dirname: true,
