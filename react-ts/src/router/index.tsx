@@ -4,11 +4,10 @@
  * @Author: camus
  * @Date: 2021-09-07 16:30:27
  * @LastEditors: camus
- * @LastEditTime: 2021-09-11 10:24:27
+ * @LastEditTime: 2021-10-14 14:58:46
  */
 import React from 'react';
 import { Redirect, Route, RouteChildrenProps } from 'react-router-dom';
-import NotFound from 'components/NotFound';
 import Home from 'pages/Home';
 
 interface RouteComponent extends RouteChildrenProps<any> {
@@ -31,7 +30,7 @@ const routes: BaseRoute[] = [
     path: '/',
     exact: true,
     component: () => (
-      <Redirect to="/home" /> //刚进入时，重定向，到home，需要引入react
+      <Redirect to="/home" /> // 刚进入时，重定向，到home，需要引入react
     ),
   },
   {

@@ -4,9 +4,9 @@
  * @Author: camus
  * @Date: 2021-09-01 19:30:47
  * @LastEditors: camus
- * @LastEditTime: 2021-09-15 19:10:51
+ * @LastEditTime: 2021-10-14 17:24:09
  */
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import styled from 'styled-components';
 import { Card } from 'antd';
 import Footer from './Footer';
@@ -19,6 +19,9 @@ interface IProps {
 }
 
 const SlotDemo: React.FC<IProps> = ({ footer, header }) => {
+  useEffect(() => {
+    throw new Error('0');
+  }, []);
   return (
     <SlotDemoWrapper>
       <Card>

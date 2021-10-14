@@ -1,3 +1,11 @@
+/*
+ * @Description:
+ * @version:
+ * @Author: camus
+ * @Date: 2021-10-14 15:18:57
+ * @LastEditors: camus
+ * @LastEditTime: 2021-10-14 17:22:06
+ */
 module.exports = {
   globals: {
     __dirname: true,
@@ -11,7 +19,7 @@ module.exports = {
     node: true,
   },
   // extends: ['eslint:recommended', 'plugin:react/recommended', 'plugin:@typescript-eslint/recommended'],
-  extends: ['alloy', 'alloy/react', 'alloy/typescript'],
+  // extends: ['alloy', 'alloy/react', 'alloy/typescript'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaFeatures: {

@@ -11,7 +11,18 @@ import {
   VideoCameraOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
+import { ErrorBoundary } from 'react-error-boundary';
 const { Header, Sider: SidNav, Content } = Layout;
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  );
+}
+
 const Home: React.FC = (props) => {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -52,9 +63,16 @@ const Home: React.FC = (props) => {
             <NavLink to="/home/Verify"> Verify</NavLink>
 
             <Switch>
-              <Route exact key="/home/AsyncUnMount" path={'/home/AsyncUnMount'} component={AsyncUnMount}></Route>
-              <Route exact key="/home/SlotDemo" path={'/home/SlotDemo'} component={SlotDemo}></Route>
-              <Route exact key="/home/Verify" path={'/home/Verify'} component={Verify}></Route>
+              <ErrorBoundary
+                FallbackComponent={ErrorFallback}
+                onReset={() => {
+                  // reset the state of your app so the error doesn't happen again
+                }}
+              >
+                <Route exact key="/home/AsyncUnMount" path={'/home/AsyncUnMount'} component={AsyncUnMount}></Route>
+                <Route exact key="/home/SlotDemo" path={'/home/SlotDemo'} component={SlotDemo}></Route>
+                <Route exact key="/home/Verify" path={'/home/Verify'} component={Verify}></Route>
+              </ErrorBoundary>
             </Switch>
           </Content>
         </Layout>
