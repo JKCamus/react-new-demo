@@ -1,7 +1,8 @@
 import { Layout, Menu } from 'antd';
+import { ErrorBoundary } from 'react-error-boundary';
 import React, { useState } from 'react';
 import { HomeWrapper } from './styles';
-import { AsyncUnMount, SlotDemo, Verify } from 'pages/Enjoy';
+import { AsyncUnMount, SlotDemo, Verify, ListDetail } from 'pages/Enjoy';
 import { NavLink, Route, Switch } from 'react-router-dom';
 
 import {
@@ -11,7 +12,6 @@ import {
   VideoCameraOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { ErrorBoundary } from 'react-error-boundary';
 const { Header, Sider: SidNav, Content } = Layout;
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -25,10 +25,11 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 
 const Home: React.FC = (props) => {
   const [collapsed, setCollapsed] = useState(false);
+  let a: any = null;
 
   return (
     <HomeWrapper>
-      <Layout className={'layout'}>
+      <Layout className="layout">
         <SidNav trigger={null} collapsible collapsed={collapsed}>
           <div className="logo" />
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
@@ -61,7 +62,8 @@ const Home: React.FC = (props) => {
             <NavLink to="/home/AsyncUnMount"> AsyncUnMount</NavLink>
             <NavLink to="/home/SlotDemo"> SlotDemo</NavLink>
             <NavLink to="/home/Verify"> Verify</NavLink>
-
+            <NavLink to="/home/ReducerDemo"> ReducerDemo</NavLink>
+            <NavLink to="/home/ListDetail"> ListDetail</NavLink>
             <Switch>
               <ErrorBoundary
                 FallbackComponent={ErrorFallback}
