@@ -4,9 +4,11 @@
  * @Author: camus
  * @Date: 2021-09-15 19:17:29
  * @LastEditors: camus
- * @LastEditTime: 2021-09-15 19:21:07
+ * @LastEditTime: 2021-10-14 15:09:02
  */
+import { ErrorFallback } from '@/components/ErrorComponent';
 import React from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import SlotDemo from './SlotDemo';
 
 const TestHeader = () => {
@@ -19,7 +21,9 @@ const TestFooter = () => {
 const SlotConsumer: React.FC = (props) => {
   return (
     <div>
-      <SlotDemo header={<TestHeader />} footer={<TestFooter />} />
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <SlotDemo header={<TestHeader />} footer={<TestFooter />} />
+      </ErrorBoundary>
     </div>
   );
 };

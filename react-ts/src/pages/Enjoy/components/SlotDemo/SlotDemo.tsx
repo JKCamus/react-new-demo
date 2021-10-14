@@ -4,7 +4,7 @@
  * @Author: camus
  * @Date: 2021-09-01 19:30:47
  * @LastEditors: camus
- * @LastEditTime: 2021-09-15 19:10:51
+ * @LastEditTime: 2021-10-14 15:07:57
  */
 import React, { ReactNode } from 'react';
 import styled from 'styled-components';
@@ -19,6 +19,9 @@ interface IProps {
 }
 
 const SlotDemo: React.FC<IProps> = ({ footer, header }) => {
+  setTimeout(() => {
+    throw new Error('0');
+  }, 1000);
   return (
     <SlotDemoWrapper>
       <Card>
