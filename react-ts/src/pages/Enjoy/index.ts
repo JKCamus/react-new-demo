@@ -4,9 +4,17 @@
 // export { name1, name2, …, nameN } from …;
 // export { import1 as name1, import2 as name2, …, nameN } from …;
 // export { default } from …;
+import { widthErrorBoundary } from '@/components/ErrorBoundary';
+import normalAsyncUnMount from './components/AsyncUnMount';
+import normalSlotDemo from './components/SlotDemo';
+import { Verify as normalVerify } from './components/Verify';
+import normalReducerDemo from './components/StateWhen';
+import normalListDetail from './components/ListDetail';
 
-export { default as AsyncUnMount } from './components/AsyncUnMount';
-export { default as SlotDemo } from './components/SlotDemo';
-export { Verify } from './components/Verify';
-export { default as ReducerDemo } from './components/StateWhen';
-export { default as ListDetail } from './components/ListDetail';
+const AsyncUnMount = widthErrorBoundary(normalAsyncUnMount);
+const SlotDemo = widthErrorBoundary(normalSlotDemo);
+const Verify = widthErrorBoundary(normalVerify);
+const ReducerDemo = widthErrorBoundary(normalReducerDemo);
+const ListDetail = widthErrorBoundary(normalListDetail);
+
+export { AsyncUnMount, SlotDemo, Verify, ReducerDemo, ListDetail };

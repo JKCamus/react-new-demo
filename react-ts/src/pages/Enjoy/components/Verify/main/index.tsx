@@ -4,7 +4,7 @@
  * @Author: camus
  * @Date: 2021-09-17 16:06:56
  * @LastEditors: camus
- * @LastEditTime: 2021-10-13 16:47:50
+ * @LastEditTime: 2021-10-15 08:49:16
  */
 import { RedoOutlined } from '@ant-design/icons';
 import React, { useEffect, useRef, useState } from 'react';
@@ -94,8 +94,8 @@ const Verify: React.FC<IVerifyProp> = ({
   };
 
   const draw = (img: HTMLImageElement) => {
-    const canvasCtx = canvasRef.current.getContext('2d');
-    const blockCtx = blockRef.current.getContext('2d');
+    const canvasCtx = !!canvasRef && canvasRef.current.getContext('2d');
+    const blockCtx = !!blockRef && blockRef.current.getContext('2d');
 
     // 随机位置创建拼图形状
     xRef.current = getRandomNumberByRange(L + 10, width - (L + 10));

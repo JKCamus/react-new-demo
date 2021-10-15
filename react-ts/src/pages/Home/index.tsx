@@ -1,10 +1,8 @@
 import { Layout, Menu } from 'antd';
-import { ErrorBoundary } from 'react-error-boundary';
 import React, { useState } from 'react';
 import { HomeWrapper } from './styles';
-import { AsyncUnMount, SlotDemo, Verify, ListDetail } from 'pages/Enjoy';
+import { AsyncUnMount, SlotDemo, Verify, ListDetail, ReducerDemo } from 'pages/Enjoy';
 import { NavLink, Route, Switch } from 'react-router-dom';
-
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -12,16 +10,8 @@ import {
   VideoCameraOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
+
 const { Header, Sider: SidNav, Content } = Layout;
-function ErrorFallback({ error, resetErrorBoundary }) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
-  );
-}
 
 const Home: React.FC = (props) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -65,16 +55,11 @@ const Home: React.FC = (props) => {
             <NavLink to="/home/ReducerDemo"> ReducerDemo</NavLink>
             <NavLink to="/home/ListDetail"> ListDetail</NavLink>
             <Switch>
-              <ErrorBoundary
-                FallbackComponent={ErrorFallback}
-                onReset={() => {
-                  // reset the state of your app so the error doesn't happen again
-                }}
-              >
-                <Route exact key="/home/AsyncUnMount" path={'/home/AsyncUnMount'} component={AsyncUnMount}></Route>
-                <Route exact key="/home/SlotDemo" path={'/home/SlotDemo'} component={SlotDemo}></Route>
-                <Route exact key="/home/Verify" path={'/home/Verify'} component={Verify}></Route>
-              </ErrorBoundary>
+              <Route exact key="/home/AsyncUnMount" path="/home/AsyncUnMount" component={AsyncUnMount} />
+              <Route exact key="/home/SlotDemo" path="/home/SlotDemo" component={SlotDemo} />
+              <Route exact key="/home/Verify" path="/home/Verify" component={Verify} />
+              <Route exact key="/home/ReducerDemo" path="/home/ReducerDemo" component={ReducerDemo} />
+              <Route exact key="/home/ListDetail" path="/home/ListDetail" component={ListDetail} />
             </Switch>
           </Content>
         </Layout>
