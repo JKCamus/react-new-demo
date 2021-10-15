@@ -7,9 +7,11 @@
 import { widthErrorBoundary } from '@/components/ErrorBoundary';
 import normalAsyncUnMount from './components/AsyncUnMount';
 import normalSlotDemo from './components/SlotDemo';
-import { Verify as normalVerify } from './components/Verify';
+import normalVerify from './components/Verify';
 import normalReducerDemo from './components/StateWhen';
 import normalListDetail from './components/ListDetail';
+
+console.log('module', module);
 
 const AsyncUnMount = widthErrorBoundary(normalAsyncUnMount);
 const SlotDemo = widthErrorBoundary(normalSlotDemo);
