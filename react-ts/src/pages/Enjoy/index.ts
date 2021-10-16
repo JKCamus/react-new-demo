@@ -5,18 +5,27 @@
 // export { import1 as name1, import2 as name2, …, nameN } from …;
 // export { default } from …;
 import { widthErrorBoundary } from '@/components/ErrorBoundary';
-import normalAsyncUnMount from './components/AsyncUnMount';
-import normalSlotDemo from './components/SlotDemo';
-import normalVerify from './components/Verify';
-import normalReducerDemo from './components/StateWhen';
-import normalListDetail from './components/ListDetail';
+// import normalAsyncUnMount from './components/AsyncUnMount';
+// import normalSlotDemo from './components/SlotDemo';
+// import normalVerify from './components/Verify';
+// import normalReducerDemo from './components/StateWhen';
+// import normalListDetail from './components/ListDetail';
 
-console.log('module', module);
+// @ts-ignore
+const Demo = require.context('@/pages/Enjoy/components', true, /index\.tsx$/);
+const WidthComponents: any = {};
 
-const AsyncUnMount = widthErrorBoundary(normalAsyncUnMount);
-const SlotDemo = widthErrorBoundary(normalSlotDemo);
-const Verify = widthErrorBoundary(normalVerify);
-const ReducerDemo = widthErrorBoundary(normalReducerDemo);
-const ListDetail = widthErrorBoundary(normalListDetail);
+Demo.keys().forEach((v) => {
+  WidthComponents[Demo(v).default.name] = widthErrorBoundary(Demo(v).default);
+  return widthErrorBoundary(Demo(v).default);
+});
 
-export { AsyncUnMount, SlotDemo, Verify, ReducerDemo, ListDetail };
+export const { AsyncUnMount, SlotConsumer, Verify, ReducerDemo, ListDetail, SomePattern } = WidthComponents;
+
+// const AsyncUnMount = widthErrorBoundary(normalAsyncUnMount);
+// const SlotDemo = widthErrorBoundary(normalSlotDemo);
+// const Verify = widthErrorBoundary(normalVerify);
+// const ReducerDemo = widthErrorBoundary(normalReducerDemo);
+// const ListDetail = widthErrorBoundary(normalListDetail);
+
+// export { AsyncUnMount, SlotDemo, Verify, ReducerDemo, ListDetail };

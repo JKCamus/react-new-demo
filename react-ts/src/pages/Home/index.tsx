@@ -1,7 +1,8 @@
 import { Layout, Menu } from 'antd';
 import React, { useState } from 'react';
 import { HomeWrapper } from './styles';
-import { AsyncUnMount, SlotDemo, Verify, ListDetail, ReducerDemo } from 'pages/Enjoy';
+import { AsyncUnMount, SlotConsumer, Verify, ListDetail, ReducerDemo, SomePattern } from 'pages/Enjoy';
+
 import { NavLink, Route, Switch } from 'react-router-dom';
 import {
   MenuUnfoldOutlined,
@@ -54,12 +55,14 @@ const Home: React.FC = (props) => {
             <NavLink to="/home/Verify"> Verify</NavLink>
             <NavLink to="/home/ReducerDemo"> ReducerDemo</NavLink>
             <NavLink to="/home/ListDetail"> ListDetail</NavLink>
+            <NavLink to="/home/SomePattern"> SomePattern</NavLink>
             <Switch>
               <Route exact key="/home/AsyncUnMount" path="/home/AsyncUnMount" component={AsyncUnMount} />
-              <Route exact key="/home/SlotDemo" path="/home/SlotDemo" component={SlotDemo} />
+              <Route exact key="/home/SlotDemo" path="/home/SlotDemo" component={SlotConsumer} />
               <Route exact key="/home/Verify" path="/home/Verify" component={Verify} />
               <Route exact key="/home/ReducerDemo" path="/home/ReducerDemo" component={ReducerDemo} />
               <Route exact key="/home/ListDetail" path="/home/ListDetail" component={ListDetail} />
+              <Route exact key="/home/SomePattern" path="/home/SomePattern" component={SomePattern} />
             </Switch>
           </Content>
         </Layout>
