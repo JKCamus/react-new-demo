@@ -20,7 +20,8 @@ Demo.keys().forEach((v) => {
   return widthErrorBoundary(Demo(v).default);
 });
 
-export const { AsyncUnMount, SlotConsumer, Verify, ReducerDemo, ListDetail, SomePattern, Minutes } = WidthComponents;
+export const { AsyncUnMount, SlotConsumer, Verify, ReducerDemo, ListDetail, SomePattern, Minutes, ImgLoadDemo } =
+  WidthComponents;
 
 // const AsyncUnMount = widthErrorBoundary(normalAsyncUnMount);
 // const SlotDemo = widthErrorBoundary(normalSlotDemo);

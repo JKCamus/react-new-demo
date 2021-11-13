@@ -1,7 +1,16 @@
 import { Layout, Menu } from 'antd';
 import React, { useState } from 'react';
 import { HomeWrapper } from './styles';
-import { AsyncUnMount, SlotConsumer, Verify, ListDetail, ReducerDemo, SomePattern, Minutes } from 'pages/Enjoy';
+import {
+  AsyncUnMount,
+  SlotConsumer,
+  Verify,
+  ListDetail,
+  ReducerDemo,
+  SomePattern,
+  Minutes,
+  ImgLoadDemo,
+} from 'pages/Enjoy';
 
 import { NavLink, Route, Switch } from 'react-router-dom';
 import {
@@ -57,6 +66,7 @@ const Home: React.FC = (props) => {
             <NavLink to="/home/ListDetail"> ListDetail</NavLink>
             <NavLink to="/home/SomePattern"> SomePattern</NavLink>
             <NavLink to="/home/Minutes"> Minutes</NavLink>
+            <NavLink to="/home/ImgLoadDemo"> ImgLoadDemo</NavLink>
             <Switch>
               <Route exact key="/home/AsyncUnMount" path="/home/AsyncUnMount" component={AsyncUnMount} />
               <Route exact key="/home/SlotDemo" path="/home/SlotDemo" component={SlotConsumer} />
@@ -65,6 +75,7 @@ const Home: React.FC = (props) => {
               <Route exact key="/home/ListDetail" path="/home/ListDetail" component={ListDetail} />
               <Route exact key="/home/SomePattern" path="/home/SomePattern" component={SomePattern} />
               <Route exact key="/home/Minutes" path="/home/Minutes" component={Minutes} />
+              <Route exact key="/home/Minutes" path="/home/ImgLoadDemo" component={ImgLoadDemo} />
             </Switch>
           </Content>
         </Layout>

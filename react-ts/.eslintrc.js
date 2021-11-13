@@ -4,13 +4,14 @@
  * @Author: camus
  * @Date: 2021-10-14 15:18:57
  * @LastEditors: camus
- * @LastEditTime: 2021-10-14 17:28:26
+ * @LastEditTime: 2021-11-13 10:25:41
  */
 module.exports = {
   globals: {
     __dirname: true,
     process: true,
     VoidFunction: true,
+    JSX: true,
   },
   env: {
     browser: true,
