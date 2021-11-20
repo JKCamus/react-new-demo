@@ -1,18 +1,16 @@
 import * as React from 'react';
 
-function imgPromise(src: string): Promise<void> {
+// 将图片加载转为promise调用形式
+const imgPromise = (src: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     const i = new Image();
     i.onload = () => resolve();
     i.onerror = reject;
     i.src = src;
   });
-}
+};
 
-function promiseFind(
-  sourceList: string[],
-  imgPromise: (src: string) => Promise<void>
-): Promise<string> {
+const promiseFind = (sourceList: string[], imgPromise: (src: string) => Promise<void>): Promise<string> => {
   let done = false;
   return new Promise((resolve, reject) => {
     const queueNext = (src: string) => {
@@ -33,9 +31,9 @@ function promiseFind(
       }, firstPromise)
       .catch(reject);
   });
-}
+};
 
-const removeBlankArrayElements = (a: string[]) => a.filter(x => x);
+const removeBlankArrayElements = (a: string[]) => a.filter((x) => x);
 
 const stringToArray = (x: string | string[]) => (Array.isArray(x) ? x : [x]);
 
@@ -48,10 +46,10 @@ export interface useImageParams {
   srcList: string | string[];
 }
 
-function useImage({
+const useImage = ({
   loadImg = imgPromise,
   srcList,
-}: useImageParams): { src: string | undefined; loading: boolean; error: any } {
+}: useImageParams): { src: string | undefined; loading: boolean; error: any } => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [value, setValue] = React.useState<string | undefined>(undefined);
@@ -65,16 +63,16 @@ function useImage({
     }
 
     cache[sourceKey]
-      .then(src => {
+      .then((src) => {
         setLoading(false);
         setValue(src);
       })
-      .catch(error => {
+      .catch((error) => {
         setLoading(false);
         setError(error);
       });
   }, [sourceKey]);
 
   return { loading: loading, src: value, error: error };
-}
+};
 export default useImage;
