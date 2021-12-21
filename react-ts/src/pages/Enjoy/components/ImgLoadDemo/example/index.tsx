@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom';
 import CacheDemo from './useImage.cache';
 import SrcListDemo from './useImage.srcList';
 import ImageDemo from './img';
+import BackgroundImgDemo from './BackgroundImgDemo';
 
 type DemoType = 'ImageDemo' | 'srcListDemo' | 'cacheDemo' | '';
 
@@ -11,6 +12,10 @@ const Divider = () => <div style={{ height: '10px' }} />;
 
 const ImgLoadDemo = () => {
   const [demoType, showDemo] = React.useState<DemoType>('');
+
+  React.useEffect(() => {
+    console.log('0000');
+  });
   return (
     <div>
       <h2>cache demo </h2>
@@ -30,6 +35,7 @@ const ImgLoadDemo = () => {
       <Divider />
       {demoType === 'ImageDemo' && <ImageDemo />}
       <Divider />
+      <BackgroundImgDemo />
     </div>
   );
 };
