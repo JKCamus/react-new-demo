@@ -10,7 +10,7 @@ const app = new Koa();
 const isProduction = process.env.NODE_ENV !== 'development';
 
 // 日志
-!isProduction ? app.use(logger()) : '';
+!isProduction && app.use(logger());
 
 // CORS 跨域配置
 app.use(cors(corsConfig));

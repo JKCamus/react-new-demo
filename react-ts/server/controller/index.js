@@ -86,15 +86,15 @@ export const handleFormData = async (ctx) => {
     // multipart Api https://www.npmjs.com/package/multiparty
     multipart.parse(req, async (err, fields, files) => {
       // 模拟报错
-      if (Math.random() < 0.2) {
-        console.log(fields.hash, '500');
-        return resolve({
-          code: 500,
-          data: null,
-          message: `上传失败`,
-          success: false,
-        });
-      }
+      // if (Math.random() < 0.2) {
+      //   console.log(fields.hash, '500');
+      //   return resolve({
+      //     code: 500,
+      //     data: null,
+      //     message: `上传失败`,
+      //     success: false,
+      //   });
+      // }
       if (err) {
         return resolve({
           code: 500,
