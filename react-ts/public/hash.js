@@ -1,5 +1,5 @@
 // worker 中也是不允许访问 dom 的，但它提供了importScripts 函数用于导入外部脚本，通过它导入 spark-md5
-self.importScripts('/spark-md5.min.js'); // 导入脚本
+self.importScripts('./spark-md5.min.js'); // 导入脚本
 
 // 生成文件 hash
 self.onmessage = (e) => {

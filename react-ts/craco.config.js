@@ -63,6 +63,7 @@ module.exports = {
   ],
   devServer: {
     hot: true,
+    port: 3001,
     historyApiFallback: true,
     compress: true,
     hotOnly: true, // 错误修改后不刷新整个页面
