@@ -1,18 +1,10 @@
-import { Layout, Menu } from 'antd';
-import React, { useState } from 'react';
-import { HomeWrapper } from './styles';
-import {
-  AsyncUnMount,
-  SlotConsumer,
-  Verify,
-  ListDetail,
-  ReducerDemo,
-  SomePattern,
-  Minutes,
-  ImgLoadDemo,
-} from 'pages/Enjoy';
-
 import { NavLink, Route, Switch } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Layout, Menu, Card, Col, Row } from 'antd';
+import { HomeWrapper } from './styles';
+import demoRoutes from './demoRoutes';
+import styled from 'styled-components';
+
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -25,7 +17,6 @@ const { Header, Sider: SidNav, Content } = Layout;
 
 const Home: React.FC = (props) => {
   const [collapsed, setCollapsed] = useState(false);
-  let a: any = null;
 
   return (
     <HomeWrapper>
@@ -59,23 +50,20 @@ const Home: React.FC = (props) => {
               minHeight: 280,
             }}
           >
-            <NavLink to="/home/AsyncUnMount"> AsyncUnMount</NavLink>
-            <NavLink to="/home/SlotDemo"> SlotDemo</NavLink>
-            <NavLink to="/home/Verify"> Verify</NavLink>
-            <NavLink to="/home/ReducerDemo"> ReducerDemo</NavLink>
-            <NavLink to="/home/ListDetail"> ListDetail</NavLink>
-            <NavLink to="/home/SomePattern"> SomePattern</NavLink>
-            <NavLink to="/home/Minutes"> Minutes</NavLink>
-            <NavLink to="/home/ImgLoadDemo"> ImgLoadDemo</NavLink>
+            <CardWrapper>
+              {demoRoutes.map((route) => (
+                <NavLink key={route.path} to={route.path}>
+                  <Card>
+                    <div>{route.label}</div>
+                  </Card>
+                </NavLink>
+              ))}
+            </CardWrapper>
+
             <Switch>
-              <Route exact key="/home/AsyncUnMount" path="/home/AsyncUnMount" component={AsyncUnMount} />
-              <Route exact key="/home/SlotDemo" path="/home/SlotDemo" component={SlotConsumer} />
-              <Route exact key="/home/Verify" path="/home/Verify" component={Verify} />
-              <Route exact key="/home/ReducerDemo" path="/home/ReducerDemo" component={ReducerDemo} />
-              <Route exact key="/home/ListDetail" path="/home/ListDetail" component={ListDetail} />
-              <Route exact key="/home/SomePattern" path="/home/SomePattern" component={SomePattern} />
-              <Route exact key="/home/Minutes" path="/home/Minutes" component={Minutes} />
-              <Route exact key="/home/Minutes" path="/home/ImgLoadDemo" component={ImgLoadDemo} />
+              {demoRoutes.map((route) => (
+                <Route exact key={route.path} path={route.path} component={route.component} />
+              ))}
             </Switch>
           </Content>
         </Layout>
@@ -84,3 +72,12 @@ const Home: React.FC = (props) => {
   );
 };
 export default Home;
+
+const CardWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(304px, 1fr));
+  grid-column-gap: 25px;
+  row-gap: 24px;
+  /* grid-auto-rows: 200px; */
+  margin-bottom: 80px;
+`;
