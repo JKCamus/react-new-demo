@@ -79,5 +79,5 @@ const CardWrapper = styled.div`
   grid-column-gap: 25px;
   row-gap: 24px;
   /* grid-auto-rows: 200px; */
-  margin-bottom: 80px;
+  margin-bottom: 10px;
 `;
