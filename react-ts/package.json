@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^12.1.10",
     "ahooks": "^2.10.9",
     "antd": "^4.16.13",
+    "axios": "^0.24.0",
     "core-js": "^3.17.3",
     "craco-less": "^1.20.0",
     "lodash-es": "^4.17.21",
@@ -20,6 +21,7 @@
     "react-router-config": "^5.1.1",
     "react-router-dom": "^5.3.0",
     "react-scripts": "4.0.3",
+    "spark-md5": "^3.0.2",
     "speed-measure-webpack-plugin": "^1.5.0",
     "styled-components": "5.3.1",
     "uuid-js": "^0.7.5",
@@ -47,6 +49,7 @@
     "eslint-config-alloy": "^4.3.0",
     "eslint-plugin-react": "^7.26.0",
     "html-webpack-plugin": "^5.3.2",
+    "nodemon": "^2.0.15",
     "stylelint": "^13.13.1",
     "stylelint-config-css-modules": "^2.2.0",
     "stylelint-config-recommended": "^5.0.0",
@@ -57,6 +60,7 @@
   },
   "scripts": {
     "start": "craco start",
+    "serve": "nodemon server/index.js",
     "build": "craco build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

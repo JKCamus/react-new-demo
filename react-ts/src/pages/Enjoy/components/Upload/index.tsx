@@ -7,6 +7,7 @@ const { Dragger } = Upload;
 import { InboxOutlined } from '@ant-design/icons';
 import { cloneDeep } from 'lodash';
 import { verifyUploadTest } from 'src/http/upload';
+import SparkMD5 from 'spark-md5';
 interface IRequest {
   url: string;
   method?: string;
@@ -50,8 +51,10 @@ const UploadDemo: React.FC = (props) => {
       setUploadPercentage(0);
     }
     const loaded = fileChunkList.map((item) => item.size * item.percentage).reduce((acc, cur) => acc + cur, 0);
+    console.log('loaded', loaded);
+    console.log('container.file?.size', container.file?.size);
     const percentage = parseInt((loaded / container.file?.size).toFixed(2), 10);
-    setUploadPercentage(percentage);
+    percentage !== NaN && setUploadPercentage(percentage);
   }, [fileChunkList]);
 
   const handlePause = () => {
@@ -60,12 +63,11 @@ const UploadDemo: React.FC = (props) => {
   };
 
   const resetData = () => {
-    requestList.forEach((xhr) => xhr?.abort());
-
-    setUploadPercentage(0);
-    setHashPercentage(0);
-    if (container.worker) {
-      setContainer({ ...container, worker: { ...container?.worker, onmessage: null } });
+    if (requestList) {
+      requestList.forEach((xhr) => xhr?.abort());
+      if (container.worker) {
+        setContainer({ ...container, worker: { ...container?.worker, onmessage: null } });
+      }
     }
   };
 
@@ -105,21 +107,21 @@ const UploadDemo: React.FC = (props) => {
   };
   // 生成文件切片
   const createFileChunk = (file, size = SIZE) => {
-    const fileChunkList = [];
+    const chunkList = [];
     let cur = 0;
     while (cur < file.size) {
-      fileChunkList.push({ file: file.slice(cur, cur + size) });
+      chunkList.push({ file: file.slice(cur, cur + size) });
       cur += size;
     }
-    return fileChunkList;
+    return chunkList;
   };
 
   // 生成文件 hash（web-worker）
-  const calculateHash = (fileChunkList) => {
+  const calculateHash = (chunkList) => {
     return new Promise((resolve) => {
       const workerHash = new Worker('/hash.js');
       setContainer({ ...container, worker: workerHash });
-      workerHash.postMessage({ fileChunkList });
+      workerHash.postMessage({ chunkList });
       workerHash.onmessage = (e) => {
         const { percentage, hash } = e.data;
         setHashPercentage(parseInt(percentage.toFixed(2), 10));
@@ -134,8 +136,9 @@ const UploadDemo: React.FC = (props) => {
     const file = option.file as File;
     if (!file) return;
     setFakeStatus(Status.uploading);
-    const fileChunkList = createFileChunk(file);
-    const hash: any = await calculateHash(fileChunkList);
+    const chunkList = createFileChunk(file);
+    console.log('chunkList', chunkList);
+    const hash: any = await calculateHash(chunkList);
 
     // const { shouldUpload, uploadedList } = await verifyUpload(file.name, hash);
     const { shouldUpload, uploadedList } = await verifyUpload1({ filename: file.name, fileHash: hash });
@@ -146,7 +149,7 @@ const UploadDemo: React.FC = (props) => {
       return;
     }
     //hash 可以不要在这边写，在uploadChunk里面写
-    const chunkData = fileChunkList.map(({ file }, index) => ({
+    const chunkData = chunkList.map(({ file }, index) => ({
       key: hash + '-' + index,
       fileHash: hash,
       index,
@@ -193,6 +196,43 @@ const UploadDemo: React.FC = (props) => {
       await mergeRequest(fileOption);
     }
   };
+
+  // const calculateHashSample=async() =>{
+  //   return new Promise(resolve => {
+  //     const spark = new SparkMD5.ArrayBuffer();
+  //     const reader = new FileReader();
+  //     const file = this.container.file;
+  //     // 文件大小
+  //     const size = this.container.file.size;
+  //     let offset = 2 * 1024 * 1024;
+  //     let chunks = [file.slice(0, offset)];
+  //     // 前面100K
+
+  //     let cur = offset;
+  //     while (cur < size) {
+  //       // 最后一块全部加进来
+  //       if (cur + offset >= size) {
+  //         chunks.push(file.slice(cur, cur + offset));
+  //       } else {
+  //         // 中间的 前中后去两个字节
+  //         const mid = cur + offset / 2;
+  //         const end = cur + offset;
+  //         chunks.push(file.slice(cur, cur + 2));
+  //         chunks.push(file.slice(mid, mid + 2));
+  //         chunks.push(file.slice(end - 2, end));
+  //       }
+  //       // 前取两个字节
+  //       cur += offset;
+  //     }
+  //     // 拼接
+  //     reader.readAsArrayBuffer(new Blob(chunks));
+  //     reader.onload = e => {
+  //       spark.append(e.target.result);
+
+  //       resolve(spark.end());
+  //     };
+  //   });
+  // }
 
   const mergeRequest = async (fileOption) => {
     await request({
