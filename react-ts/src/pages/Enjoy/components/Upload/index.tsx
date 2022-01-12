@@ -51,8 +51,6 @@ const UploadDemo: React.FC = (props) => {
       setUploadPercentage(0);
     }
     const loaded = fileChunkList.map((item) => item.size * item.percentage).reduce((acc, cur) => acc + cur, 0);
-    console.log('loaded', loaded);
-    console.log('container.file?.size', container.file?.size);
     const percentage = parseInt((loaded / container.file?.size).toFixed(2), 10);
     percentage !== NaN && setUploadPercentage(percentage);
   }, [fileChunkList]);
@@ -131,16 +129,56 @@ const UploadDemo: React.FC = (props) => {
       };
     });
   };
+  // 生成抽样hash
+  const calculateHashSample = async (file) => {
+    return new Promise((resolve) => {
+      const spark = new SparkMD5.ArrayBuffer();
+      const reader = new FileReader();
+      // 文件大小
+      const size = file.size;
+      const offset = 2 * 1024 * 1024;
+      const chunks = [file.slice(0, offset)];
+      // 前面100K
+      let cur = offset;
+      while (cur < size) {
+        // 最后一块全部加进来
+        if (cur + offset >= size) {
+          chunks.push(file.slice(cur, cur + offset));
+        } else {
+          // 中间的 前中后去两个字节
+          const mid = cur + offset / 2;
+          const end = cur + offset;
+          chunks.push(file.slice(cur, cur + 2));
+          chunks.push(file.slice(mid, mid + 2));
+          chunks.push(file.slice(end - 2, end));
+          const percentage = (cur / size) * 100;
+          setTimeout(() => {
+            setHashPercentage(Math.ceil(percentage));
+          }, 0);
+        }
+        // 前取两个字节
+        cur += offset;
+      }
+      // 拼接
+      reader.readAsArrayBuffer(new Blob(chunks));
+      reader.onload = (e) => {
+        spark.append(e.target.result);
+        resolve(spark.end());
+      };
+    });
+  };
 
   const handleUpload = async (option: any) => {
     const file = option.file as File;
     if (!file) return;
     setFakeStatus(Status.uploading);
+    const hash = await calculateHashSample(file);
     const chunkList = createFileChunk(file);
-    console.log('chunkList', chunkList);
-    const hash: any = await calculateHash(chunkList);
-
+    //全量hash
+    // const hash: any = await calculateHash(chunkList);
+    //xhr版本
     // const { shouldUpload, uploadedList } = await verifyUpload(file.name, hash);
+    //axios版本
     const { shouldUpload, uploadedList } = await verifyUpload1({ filename: file.name, fileHash: hash });
 
     if (!shouldUpload) {
@@ -160,12 +198,10 @@ const UploadDemo: React.FC = (props) => {
       percentage: uploadedList.includes(index) ? 100 : 0,
     }));
     setContainer({ ...container, hash: hash, file: file });
-
     const fileOption = {
       fileName: file.name,
       fileHash: hash,
     };
-
     await uploadChunks(uploadedList, fileOption, chunkData);
   };
 
@@ -180,16 +216,17 @@ const UploadDemo: React.FC = (props) => {
         formData.append('filename', fileOption.fileName);
         formData.append('fileHash', fileOption.fileHash);
         return { formData, index };
-      })
-      .map(async ({ formData, index }) =>
-        request({
-          url: 'http://localhost:3000',
-          data: formData,
-          onProgress: createProgressHandler(chunkData, index),
-          requests: requestList,
-        }),
-      );
-    await Promise.all(requests);
+      });
+    // .map(async ({ formData, index }) =>
+    //   request({
+    //     url: 'http://localhost:3000',
+    //     data: formData,
+    //     onProgress: createProgressHandler(chunkData, index),
+    //     requests: requestList,
+    //   }),
+    // );
+    // await Promise.all(requests);
+    await controlRequest(requests, chunkData);
     // 之前上传的切片数量 + 本次上传的切片数量 = 所有切片数量时
     // 合并切片
     if (uploadedList.length + requests.length === chunkData.length) {
@@ -197,42 +234,36 @@ const UploadDemo: React.FC = (props) => {
     }
   };
 
-  // const calculateHashSample=async() =>{
-  //   return new Promise(resolve => {
-  //     const spark = new SparkMD5.ArrayBuffer();
-  //     const reader = new FileReader();
-  //     const file = this.container.file;
-  //     // 文件大小
-  //     const size = this.container.file.size;
-  //     let offset = 2 * 1024 * 1024;
-  //     let chunks = [file.slice(0, offset)];
-  //     // 前面100K
-
-  //     let cur = offset;
-  //     while (cur < size) {
-  //       // 最后一块全部加进来
-  //       if (cur + offset >= size) {
-  //         chunks.push(file.slice(cur, cur + offset));
-  //       } else {
-  //         // 中间的 前中后去两个字节
-  //         const mid = cur + offset / 2;
-  //         const end = cur + offset;
-  //         chunks.push(file.slice(cur, cur + 2));
-  //         chunks.push(file.slice(mid, mid + 2));
-  //         chunks.push(file.slice(end - 2, end));
-  //       }
-  //       // 前取两个字节
-  //       cur += offset;
-  //     }
-  //     // 拼接
-  //     reader.readAsArrayBuffer(new Blob(chunks));
-  //     reader.onload = e => {
-  //       spark.append(e.target.result);
-
-  //       resolve(spark.end());
-  //     };
-  //   });
-  // }
+  const controlRequest = async (requests, chunkData, max = 3) => {
+    return new Promise<void>((resolve) => {
+      const len = requests.length;
+      let idx = 0;
+      let counter = 0;
+      const start = async () => {
+        while (idx < len && max > 0) {
+          max--;
+          const formData = requests[idx].formData;
+          const index = requests[idx].index;
+          idx += 1;
+          request({
+            url: 'http://localhost:3000',
+            data: formData,
+            onProgress: createProgressHandler(chunkData, index),
+            requests: requestList,
+          }).then(() => {
+            max += 1;
+            counter += 1;
+            if (counter === len) {
+              resolve();
+            } else {
+              start();
+            }
+          });
+        }
+      };
+      start();
+    });
+  };
 
   const mergeRequest = async (fileOption) => {
     await request({
