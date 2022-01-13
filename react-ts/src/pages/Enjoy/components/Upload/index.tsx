@@ -23,6 +23,8 @@ const Status = {
   wait: 'wait',
   pause: 'pause',
   uploading: 'uploading',
+  error: 'error',
+  done: 'done',
 };
 
 const UploadDemo: React.FC = (props) => {
@@ -129,6 +131,23 @@ const UploadDemo: React.FC = (props) => {
       };
     });
   };
+
+  const calculateHashSampleTest = (file) => {
+    return new Promise((resolve) => {
+      const workerHash = new Worker('/hashSample.js');
+      setContainer({ ...container, worker: workerHash });
+      workerHash.postMessage(file);
+      workerHash.onmessage = (e) => {
+        const { percentage, hash } = e.data;
+        console.log('percentage', percentage);
+        setHashPercentage(parseInt(percentage.toFixed(2), 10));
+        if (hash) {
+          resolve(hash);
+        }
+      };
+    });
+  };
+
   // 生成抽样hash
   const calculateHashSample = async (file) => {
     return new Promise((resolve) => {
@@ -172,7 +191,9 @@ const UploadDemo: React.FC = (props) => {
     const file = option.file as File;
     if (!file) return;
     setFakeStatus(Status.uploading);
-    const hash = await calculateHashSample(file);
+    // const hash = await calculateHashSample(file);
+    const hash = await calculateHashSampleTest(file);
+
     const chunkList = createFileChunk(file);
     //全量hash
     // const hash: any = await calculateHash(chunkList);
@@ -215,7 +236,7 @@ const UploadDemo: React.FC = (props) => {
         formData.append('hash', hash);
         formData.append('filename', fileOption.fileName);
         formData.append('fileHash', fileOption.fileHash);
-        return { formData, index };
+        return { formData, index, status: Status.wait, retryNum: 0 };
       });
     // .map(async ({ formData, index }) =>
     //   request({
@@ -226,39 +247,61 @@ const UploadDemo: React.FC = (props) => {
     //   }),
     // );
     // await Promise.all(requests);
-    await controlRequest(requests, chunkData);
+    const counter = await controlRequest(requests, chunkData);
     // 之前上传的切片数量 + 本次上传的切片数量 = 所有切片数量时
     // 合并切片
-    if (uploadedList.length + requests.length === chunkData.length) {
+    if (uploadedList.length + counter === chunkData.length) {
       await mergeRequest(fileOption);
     }
   };
 
-  const controlRequest = async (requests, chunkData, max = 3) => {
-    return new Promise<void>((resolve) => {
+  const controlRequest = async (requests, chunkData, limit = 3) => {
+    return new Promise<number>((resolve, reject) => {
       const len = requests.length;
-      let idx = 0;
       let counter = 0;
+      let max = limit;
       const start = async () => {
-        while (idx < len && max > 0) {
+        while (counter < len && max > 0) {
           max--;
-          const formData = requests[idx].formData;
-          const index = requests[idx].index;
-          idx += 1;
+          const requestData = requests.find(
+            (r) => r.status === Status.wait || (r.status === Status.error && r.retryNum <= 2),
+          );
+          if (!requestData) continue;
+          requestData.status = requestData.status = Status.uploading;
+          const formData = requestData.formData;
+          const index = requestData.index;
+          // 任务不能仅仅累加获取，而是要根据状态
+          // wait和error的可以发出请求 方便重试
           request({
             url: 'http://localhost:3000',
             data: formData,
             onProgress: createProgressHandler(chunkData, index),
             requests: requestList,
-          }).then(() => {
-            max += 1;
-            counter += 1;
-            if (counter === len) {
-              resolve();
-            } else {
+          })
+            .then(() => {
+              requestData.status = Status.done;
+              max += 1;
+              counter += 1;
               start();
-            }
-          });
+            })
+            .catch(() => {
+              max += 1;
+              requestData.status = Status.error;
+              chunkData[index].process = 0;
+              setFileChunkList(cloneDeep(chunkData));
+              if (typeof requestData['retryNum'] !== 'number') {
+                requestData['retryNum'] = 0;
+              }
+              requestData['retryNum'] += 1;
+              if (requestData['retryNum'] > 2) {
+                counter++; // 把当前切块 3 次失败后，当做是成功了，不再重试发送了
+                chunkData[index].process = -1; // 更改上传失败进度条
+              }
+              start();
+            });
+        }
+        if (counter >= len) {
+          resolve(counter);
         }
       };
       start();
@@ -324,7 +367,7 @@ const UploadDemo: React.FC = (props) => {
   };
 
   const onDrop = (e) => {
-    console.log('Dropped files', e.dataTransfer.files);
+    // console.log('Dropped files', e.dataTransfer.files);
   };
 
   const columns = [
