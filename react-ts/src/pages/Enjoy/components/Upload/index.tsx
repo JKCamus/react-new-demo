@@ -6,8 +6,9 @@ import styled from 'styled-components';
 const { Dragger } = Upload;
 import { InboxOutlined } from '@ant-design/icons';
 import { cloneDeep } from 'lodash';
-import { verifyUploadTest } from 'src/http/upload';
-import SparkMD5 from 'spark-md5';
+import { verifyUploadTest, uploadChunksTest, mergeChunks } from 'src/http/upload';
+import axios from 'axios';
+
 interface IRequest {
   url: string;
   method?: string;
@@ -15,6 +16,21 @@ interface IRequest {
   headers?: any;
   onProgress?: any;
   requests?: any;
+}
+
+interface IChunk {
+  // 切片源文件
+  chunk: Blob;
+  // hash值，用来标识文件的唯一性
+  hash: string;
+  // 文件名
+  fileName: string;
+  // 请求进度
+  progress: number;
+  // 下标，标记哪些分片包已上传完成
+  index: number;
+  // abort上传请求
+  cancel: () => void;
 }
 
 const SIZE = 20 * 1024 * 1024; // 切片大小
@@ -49,12 +65,20 @@ const UploadDemo: React.FC = (props) => {
   }, [container.file, Status]);
 
   useEffect(() => {
-    if (!container.file || !fileChunkList.length) {
+    if (!container.file || !fileChunkList?.length) {
       setUploadPercentage(0);
     }
     const loaded = fileChunkList.map((item) => item.size * item.percentage).reduce((acc, cur) => acc + cur, 0);
     const percentage = parseInt((loaded / container.file?.size).toFixed(2), 10);
     percentage !== NaN && setUploadPercentage(percentage);
+    if (percentage === 100) {
+      const fileOption = {
+        fileName: container.file.name,
+        fileHash: container.hash,
+      };
+      console.log('开始合并', fileOption);
+      mergeRequest(fileOption);
+    }
   }, [fileChunkList]);
 
   const handlePause = () => {
@@ -73,7 +97,7 @@ const UploadDemo: React.FC = (props) => {
 
   const handleResume = async () => {
     setFakeStatus(Status.uploading);
-    const { uploadedList } = await verifyUpload(container.file.name, container.hash);
+    const { uploadedList } = await verifyUpload({ filename: container.file.name, fileHash: container.hash });
     const fileOption = {
       fileName: container.file.name,
       fileHash: container.hash,
@@ -84,7 +108,7 @@ const UploadDemo: React.FC = (props) => {
   const request = ({ url, method = 'post', data, headers = {}, onProgress = (e) => e, requests }: IRequest) => {
     return new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
-      xhr.timeout = 2000;
+      xhr.timeout = 10000;
       xhr.upload.onprogress = onProgress;
       xhr.open(method, url);
       Object.keys(headers).forEach((key) => xhr.setRequestHeader(key, headers[key]));
@@ -96,7 +120,6 @@ const UploadDemo: React.FC = (props) => {
           requestList.splice(xhrIndex, 1);
           setRequestList(requestList);
         }
-
         resolve({
           data: e.target.response,
         });
@@ -106,6 +129,14 @@ const UploadDemo: React.FC = (props) => {
       setRequestList(requests);
     });
   };
+
+  // 获取cancelToken
+  const createCancelAction = (chunk: IChunk) => {
+    const { cancel, token } = axios.CancelToken.source();
+    chunk.cancel = cancel;
+    return token;
+  };
+
   // 生成文件切片
   const createFileChunk = (file, size = SIZE) => {
     const chunkList = [];
@@ -148,59 +179,15 @@ const UploadDemo: React.FC = (props) => {
     });
   };
 
-  // 生成抽样hash
-  const calculateHashSample = async (file) => {
-    return new Promise((resolve) => {
-      const spark = new SparkMD5.ArrayBuffer();
-      const reader = new FileReader();
-      // 文件大小
-      const size = file.size;
-      const offset = 2 * 1024 * 1024;
-      const chunks = [file.slice(0, offset)];
-      // 前面100K
-      let cur = offset;
-      while (cur < size) {
-        // 最后一块全部加进来
-        if (cur + offset >= size) {
-          chunks.push(file.slice(cur, cur + offset));
-        } else {
-          // 中间的 前中后去两个字节
-          const mid = cur + offset / 2;
-          const end = cur + offset;
-          chunks.push(file.slice(cur, cur + 2));
-          chunks.push(file.slice(mid, mid + 2));
-          chunks.push(file.slice(end - 2, end));
-          const percentage = (cur / size) * 100;
-          setTimeout(() => {
-            setHashPercentage(Math.ceil(percentage));
-          }, 0);
-        }
-        // 前取两个字节
-        cur += offset;
-      }
-      // 拼接
-      reader.readAsArrayBuffer(new Blob(chunks));
-      reader.onload = (e) => {
-        spark.append(e.target.result);
-        resolve(spark.end());
-      };
-    });
-  };
-
   const handleUpload = async (option: any) => {
     const file = option.file as File;
     if (!file) return;
     setFakeStatus(Status.uploading);
-    // const hash = await calculateHashSample(file);
     const hash = await calculateHashSampleTest(file);
 
     const chunkList = createFileChunk(file);
-    //全量hash
-    // const hash: any = await calculateHash(chunkList);
-    //xhr版本
-    // const { shouldUpload, uploadedList } = await verifyUpload(file.name, hash);
-    //axios版本
-    const { shouldUpload, uploadedList } = await verifyUpload1({ filename: file.name, fileHash: hash });
+
+    const { shouldUpload, uploadedList } = await verifyUpload({ filename: file.name, fileHash: hash });
 
     if (!shouldUpload) {
       message.success('秒传：上传成功');
@@ -236,24 +223,28 @@ const UploadDemo: React.FC = (props) => {
         formData.append('hash', hash);
         formData.append('filename', fileOption.fileName);
         formData.append('fileHash', fileOption.fileHash);
+        const cancelToken = createCancelAction(chunk);
+        const onUploadProgress = createProgressHandler(chunkData, index);
+        return uploadChunksTest(formData, { onUploadProgress, cancelToken });
         return { formData, index, status: Status.wait, retryNum: 0 };
       });
+
     // .map(async ({ formData, index }) =>
     //   request({
-    //     url: 'http://localhost:3000',
+    //     url: 'http://localhost:3000/uploadChunks',
     //     data: formData,
     //     onProgress: createProgressHandler(chunkData, index),
     //     requests: requestList,
     //   }),
     // );
-    // await Promise.all(requests);
-    const counter = await controlRequest(requests, chunkData);
-    console.log('counter', counter);
+    await Promise.all(requests);
+    // const counter = await controlRequest(requests, chunkData);
+    // console.log('counter', counter);
     // 之前上传的切片数量 + 本次上传的切片数量 = 所有切片数量时
     // 合并切片
-    if (uploadedList.length + counter === chunkData.length) {
-      await mergeRequest(fileOption);
-    }
+    // if (uploadedList.length + requests.length === chunkData.length) {
+    //   await mergeRequest(fileOption);
+    // }
   };
 
   const controlRequest = async (requests, chunkData, limit = 3) => {
@@ -292,7 +283,6 @@ const UploadDemo: React.FC = (props) => {
             })
             .catch((error) => {
               console.log('重试~~~~', error);
-
               max += 1;
               requestData.status = Status.error;
               chunkData[index].process = 0;
@@ -314,6 +304,17 @@ const UploadDemo: React.FC = (props) => {
   };
 
   const mergeRequest = async (fileOption) => {
+    try {
+      const mergeData = { size: SIZE, fileHash: fileOption.fileHash, filename: fileOption.fileName };
+      await mergeChunks(mergeData);
+      message.success('上传成功');
+      setFakeStatus(Status.wait);
+    } catch (error) {
+      message.success('上传成功失败');
+    }
+  };
+
+  const mergeRequestOld = async (fileOption) => {
     await request({
       url: 'http://localhost:3000/merge',
       headers: {
@@ -328,39 +329,29 @@ const UploadDemo: React.FC = (props) => {
     message.success('上传成功');
     setFakeStatus(Status.wait);
   };
-
   // 根据 hash 验证文件是否曾经已经被上传过
   // 没有才进行上传
-  const verifyUpload = async (filename, fileHash) => {
-    const res: any = await request({
-      url: 'http://localhost:3000/verify',
-      headers: {
-        'content-type': 'application/json',
-      },
-      data: JSON.stringify({
-        filename,
-        fileHash,
-      }),
-    }).catch((error) => {
-      console.log(error);
-    });
-    return JSON.parse(res?.data);
-  };
-
-  const verifyUpload1 = async ({ filename, fileHash }): Promise<any> => {
+  const verifyUpload = async ({ filename, fileHash }): Promise<any> => {
     const res = await verifyUploadTest({ filename, fileHash });
     return res;
   };
-  // 用闭包保存每个 chunk 的进度数据
-  const createProgressHandler = (chunkData, index) => {
+  // 创建每个chunk上传的progress监听函数
+  const createProgressHandler = (chunkData, index: number) => {
     return (e) => {
-      chunkData[index].percentage = parseInt(String((e.loaded / e.total) * 100), 10);
-      setFileChunkList(cloneDeep(chunkData));
+      setFileChunkList((pre) => {
+        const newChunkList = [...chunkData];
+        if (newChunkList[index]) {
+          newChunkList[index].percentage = parseInt(String((e.loaded / e.total) * 100), 10);
+          return newChunkList;
+        }
+      });
     };
   };
   const handleChange = ({ fileList: newFileList }) => {
     resetData();
+
     setFileList([]);
+
     // const { status } = info.file;
     // console.log('FileList', info.file);
     // if (status !== 'uploading') {

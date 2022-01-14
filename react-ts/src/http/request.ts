@@ -1,11 +1,13 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { message } from 'antd';
 // 接口相关，未上传git
 import { BASE_URL, TIMEOUT } from './config';
 
+export type { AxiosRequestConfig };
+
 const instance = axios.create({
   baseURL: BASE_URL,
-  timeout: TIMEOUT,
+  // timeout: TIMEOUT,
 });
 /**
  * @description: 请求拦截
