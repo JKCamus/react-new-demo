@@ -7,5 +7,7 @@ export const verifyUploadTest = ({ filename, fileHash }) =>
       'content-type': 'application/json',
     },
     method: 'post',
-    data: JSON.stringify({ filename, fileHash }),
+    data: { filename, fileHash },
   });
+
+// export const uploadChunks=(chunks,index)

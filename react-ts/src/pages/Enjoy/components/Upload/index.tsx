@@ -84,6 +84,7 @@ const UploadDemo: React.FC = (props) => {
   const request = ({ url, method = 'post', data, headers = {}, onProgress = (e) => e, requests }: IRequest) => {
     return new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
+      xhr.timeout = 2000;
       xhr.upload.onprogress = onProgress;
       xhr.open(method, url);
       Object.keys(headers).forEach((key) => xhr.setRequestHeader(key, headers[key]));
@@ -139,7 +140,6 @@ const UploadDemo: React.FC = (props) => {
       workerHash.postMessage(file);
       workerHash.onmessage = (e) => {
         const { percentage, hash } = e.data;
-        console.log('percentage', percentage);
         setHashPercentage(parseInt(percentage.toFixed(2), 10));
         if (hash) {
           resolve(hash);
@@ -248,6 +248,7 @@ const UploadDemo: React.FC = (props) => {
     // );
     // await Promise.all(requests);
     const counter = await controlRequest(requests, chunkData);
+    console.log('counter', counter);
     // 之前上传的切片数量 + 本次上传的切片数量 = 所有切片数量时
     // 合并切片
     if (uploadedList.length + counter === chunkData.length) {
@@ -267,6 +268,7 @@ const UploadDemo: React.FC = (props) => {
             (r) => r.status === Status.wait || (r.status === Status.error && r.retryNum <= 2),
           );
           if (!requestData) continue;
+
           requestData.status = requestData.status = Status.uploading;
           const formData = requestData.formData;
           const index = requestData.index;
@@ -282,9 +284,15 @@ const UploadDemo: React.FC = (props) => {
               requestData.status = Status.done;
               max += 1;
               counter += 1;
-              start();
+              if (counter === len) {
+                resolve(counter);
+              } else {
+                start();
+              }
             })
-            .catch(() => {
+            .catch((error) => {
+              console.log('重试~~~~', error);
+
               max += 1;
               requestData.status = Status.error;
               chunkData[index].process = 0;
@@ -299,9 +307,6 @@ const UploadDemo: React.FC = (props) => {
               }
               start();
             });
-        }
-        if (counter >= len) {
-          resolve(counter);
         }
       };
       start();
@@ -336,6 +341,8 @@ const UploadDemo: React.FC = (props) => {
         filename,
         fileHash,
       }),
+    }).catch((error) => {
+      console.log(error);
     });
     return JSON.parse(res?.data);
   };
