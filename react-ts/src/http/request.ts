@@ -4,11 +4,13 @@ import { message } from 'antd';
 import { BASE_URL, TIMEOUT } from './config';
 
 export type { AxiosRequestConfig };
+export const CancelToken = axios.CancelToken;
 
 const instance = axios.create({
   baseURL: BASE_URL,
   // timeout: TIMEOUT,
 });
+
 /**
  * @description: 请求拦截
  */
@@ -17,7 +19,6 @@ instance.interceptors.request.use(
     // 1.发送网络请求时, 在界面的中间位置显示Loading的组件
 
     // 2.某一些请求要求用户必须携带token, 如果没有携带, 那么直接跳转到登录页面
-
     // 3.params/data序列化的操作
     const userInfoString = localStorage.getItem('USER');
     if (userInfoString) {
@@ -35,6 +36,8 @@ instance.interceptors.request.use(
  */
 instance.interceptors.response.use(
   (res) => {
+    console.log('config1', res);
+
     return res.data;
   },
   (err) => {

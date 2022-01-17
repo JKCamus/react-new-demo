@@ -6,8 +6,10 @@ import styled from 'styled-components';
 const { Dragger } = Upload;
 import { InboxOutlined } from '@ant-design/icons';
 import { cloneDeep } from 'lodash';
-import { verifyUploadTest, uploadChunksTest, mergeChunks } from 'src/http/upload';
-import axios from 'axios';
+import { verifyUploadTest, mergeChunks, uploadChunksTest } from 'src/http/upload';
+import axios, { AxiosRequestConfig } from 'axios';
+
+import { CancelToken } from 'src/http/request';
 
 interface IRequest {
   url: string;
@@ -43,6 +45,9 @@ const Status = {
   done: 'done',
 };
 
+const uploadChunksTest1 = (param: FormData, config: AxiosRequestConfig) =>
+  axios.post('http://localhost:3000/uploadChunks', param, config);
+
 const UploadDemo: React.FC = (props) => {
   const [status, setStatus] = useState(Status);
   const [fileList, setFileList] = useState([]);
@@ -76,7 +81,6 @@ const UploadDemo: React.FC = (props) => {
         fileName: container.file.name,
         fileHash: container.hash,
       };
-      console.log('开始合并', fileOption);
       mergeRequest(fileOption);
     }
   }, [fileChunkList]);
@@ -86,9 +90,20 @@ const UploadDemo: React.FC = (props) => {
     resetData();
   };
 
+  // const resetData = () => {
+  //   if (requestList) {
+  //     requestList.forEach((xhr) => xhr?.abort());
+  //     if (container.worker) {
+  //       setContainer({ ...container, worker: { ...container?.worker, onmessage: null } });
+  //     }
+  //   }
+  // };
+
   const resetData = () => {
-    if (requestList) {
-      requestList.forEach((xhr) => xhr?.abort());
+    if (fileChunkList) {
+      fileChunkList.forEach((chunkItem) => {
+        chunkItem.cancel(chunkItem.hash);
+      });
       if (container.worker) {
         setContainer({ ...container, worker: { ...container?.worker, onmessage: null } });
       }
@@ -98,6 +113,7 @@ const UploadDemo: React.FC = (props) => {
   const handleResume = async () => {
     setFakeStatus(Status.uploading);
     const { uploadedList } = await verifyUpload({ filename: container.file.name, fileHash: container.hash });
+
     const fileOption = {
       fileName: container.file.name,
       fileHash: container.hash,
@@ -131,11 +147,11 @@ const UploadDemo: React.FC = (props) => {
   };
 
   // 获取cancelToken
-  const createCancelAction = (chunk: IChunk) => {
-    const { cancel, token } = axios.CancelToken.source();
-    chunk.cancel = cancel;
-    return token;
-  };
+  // const createCancelAction = (chunk: IChunk) => {
+  //   const { cancel, token } = axios.CancelToken.source();
+  //   chunk.cancel = cancel;
+  //   return token;
+  // };
 
   // 生成文件切片
   const createFileChunk = (file, size = SIZE) => {
@@ -146,22 +162,6 @@ const UploadDemo: React.FC = (props) => {
       cur += size;
     }
     return chunkList;
-  };
-
-  // 生成文件 hash（web-worker）
-  const calculateHash = (chunkList) => {
-    return new Promise((resolve) => {
-      const workerHash = new Worker('/hash.js');
-      setContainer({ ...container, worker: workerHash });
-      workerHash.postMessage({ chunkList });
-      workerHash.onmessage = (e) => {
-        const { percentage, hash } = e.data;
-        setHashPercentage(parseInt(percentage.toFixed(2), 10));
-        if (hash) {
-          resolve(hash);
-        }
-      };
-    });
   };
 
   const calculateHashSampleTest = (file) => {
@@ -217,16 +217,24 @@ const UploadDemo: React.FC = (props) => {
   const uploadChunks = async (uploadedList = [], fileOption, chunkData) => {
     const requests = chunkData
       .filter(({ hash }) => !uploadedList.includes(hash))
-      .map(({ chunk, hash, index }) => {
+      .map((item) => {
+        const { chunk, hash, index } = item;
         const formData = new FormData();
         formData.append('chunk', chunk);
         formData.append('hash', hash);
         formData.append('filename', fileOption.fileName);
         formData.append('fileHash', fileOption.fileHash);
-        const cancelToken = createCancelAction(chunk);
+
+        // const cancelToken = createCancelAction(item);
+        const { cancel, token } = CancelToken.source();
+        item.cancel = cancel;
+
         const onUploadProgress = createProgressHandler(chunkData, index);
-        return uploadChunksTest(formData, { onUploadProgress, cancelToken });
-        return { formData, index, status: Status.wait, retryNum: 0 };
+        return uploadChunksTest(formData, { onUploadProgress, cancelToken: token });
+        // return uploadChunksTest(formData, { onUploadProgress, cancelToken });
+
+        uploadChunks;
+        // return { formData, index, status: Status.wait, retryNum: 0 };
       });
 
     // .map(async ({ formData, index }) =>
@@ -238,6 +246,7 @@ const UploadDemo: React.FC = (props) => {
     //   }),
     // );
     await Promise.all(requests);
+
     // const counter = await controlRequest(requests, chunkData);
     // console.log('counter', counter);
     // 之前上传的切片数量 + 本次上传的切片数量 = 所有切片数量时
@@ -314,21 +323,6 @@ const UploadDemo: React.FC = (props) => {
     }
   };
 
-  const mergeRequestOld = async (fileOption) => {
-    await request({
-      url: 'http://localhost:3000/merge',
-      headers: {
-        'content-type': 'application/json',
-      },
-      data: JSON.stringify({
-        size: SIZE,
-        fileHash: fileOption.fileHash,
-        filename: fileOption.fileName,
-      }),
-    });
-    message.success('上传成功');
-    setFakeStatus(Status.wait);
-  };
   // 根据 hash 验证文件是否曾经已经被上传过
   // 没有才进行上传
   const verifyUpload = async ({ filename, fileHash }): Promise<any> => {
