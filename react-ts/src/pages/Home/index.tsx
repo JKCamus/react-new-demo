@@ -1,6 +1,10 @@
-import { Layout, Menu } from 'antd';
+import { NavLink, Route, Switch } from 'react-router-dom';
 import React, { useState } from 'react';
+import { Layout, Menu, Card, Col, Row } from 'antd';
 import { HomeWrapper } from './styles';
+import demoRoutes from './demoRoutes';
+import styled from 'styled-components';
+
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -8,18 +12,20 @@ import {
   VideoCameraOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
+
 const { Header, Sider: SidNav, Content } = Layout;
+
 const Home: React.FC = (props) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <HomeWrapper>
-      <Layout className={'layout'}>
+      <Layout className="layout">
         <SidNav trigger={null} collapsible collapsed={collapsed}>
           <div className="logo" />
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             <Menu.Item key="1" icon={<UserOutlined />}>
-              nav 1
+              <NavLink to="/home/enjoy"> enjoy</NavLink>
             </Menu.Item>
             <Menu.Item key="2" icon={<VideoCameraOutlined />}>
               nav 2
@@ -44,7 +50,21 @@ const Home: React.FC = (props) => {
               minHeight: 280,
             }}
           >
-            Content
+            <CardWrapper>
+              {demoRoutes.map((route) => (
+                <NavLink key={route.path} to={route.path}>
+                  <Card>
+                    <div>{route.label}</div>
+                  </Card>
+                </NavLink>
+              ))}
+            </CardWrapper>
+
+            <Switch>
+              {demoRoutes.map((route) => (
+                <Route exact key={route.path} path={route.path} component={route.component} />
+              ))}
+            </Switch>
           </Content>
         </Layout>
       </Layout>
@@ -52,3 +72,12 @@ const Home: React.FC = (props) => {
   );
 };
 export default Home;
+
+const CardWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(304px, 1fr));
+  grid-column-gap: 25px;
+  row-gap: 24px;
+  /* grid-auto-rows: 200px; */
+  margin-bottom: 10px;
+`;

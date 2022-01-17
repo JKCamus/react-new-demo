@@ -7,10 +7,15 @@ module.exports = {
         // usage: 代码中需要哪些polyfill, 就引用相关的api
         // entry: 手动在入口文件中导入 core-js/regenerator-runtime, 根据目标浏览器引入所有对应的polyfill
         useBuiltIns: 'usage',
-        corejs: 2,
+        corejs: 3,
       },
     ],
-    ['@babel/preset-react'],
+    [
+      '@babel/preset-react',
+      {
+        runtime: 'automatic',
+      },
+    ],
     ['@babel/preset-typescript'],
   ],
   plugins: ['babel-plugin-styled-components'],
