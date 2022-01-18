@@ -74,13 +74,13 @@ const UploadDemo: React.FC = (props) => {
     const loaded = fileChunkList.map((item) => item.size * item.percentage).reduce((acc, cur) => acc + cur, 0);
     const percentage = parseInt((loaded / container.file?.size).toFixed(2), 10);
     percentage !== NaN && setUploadPercentage(percentage);
-    if (percentage === 100) {
-      const fileOption = {
-        fileName: container.file.name,
-        fileHash: container.hash,
-      };
-      mergeRequest(fileOption);
-    }
+    // if (percentage === 100) {
+    //   const fileOption = {
+    //     fileName: container.file.name,
+    //     fileHash: container.hash,
+    //   };
+    //   mergeRequest(fileOption);
+    // }
   }, [fileChunkList]);
 
   const handlePause = () => {
@@ -202,8 +202,10 @@ const UploadDemo: React.FC = (props) => {
       ...chunk,
       percentage: uploadedList.includes(chunk.hash) ? 100 : 0,
     }));
+
     if (chunkData.length === uploadedList.length) {
       setFileChunkList(updateChunk);
+      await mergeRequest(fileOption);
       return;
     }
 
@@ -225,8 +227,10 @@ const UploadDemo: React.FC = (props) => {
         // return uploadChunksTest(formData, { onUploadProgress, cancelToken });
         return { formData, index, status: Status.wait, retryNum: 0 };
       });
-    const res = await controlRequest(requests, updateChunk);
-    console.log('res--------', res);
+    const counter = await controlRequest(requests, updateChunk);
+    if (counter && chunkData.length === counter + uploadedList.length) {
+      await mergeRequest(fileOption);
+    }
 
     // await Promise.all(requests);
   };
