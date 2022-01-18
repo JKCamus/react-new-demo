@@ -25,7 +25,7 @@ export const verifyUploadTest = ({ filename, fileHash }) =>
   });
 
 export const uploadChunksTest = (params: FormData, config) => {
-  request({
+  return request({
     url: '/uploadChunks',
     method: 'POST',
     data: params,
@@ -37,7 +37,7 @@ export const uploadChunksTest = (params: FormData, config) => {
 };
 
 export const mergeChunks = (data) => {
-  request({
+  return request({
     url: '/merge',
     headers: {
       'content-type': 'application/json',

@@ -236,7 +236,7 @@ const UploadDemo: React.FC = (props) => {
                 max += 1;
                 requestData.status = Status.error;
                 chunkData[index].process = 0;
-                setFileChunkList(cloneDeep(chunkData));
+                setFileChunkList(chunkData);
                 if (typeof requestData['retryNum'] !== 'number') {
                   requestData['retryNum'] = 0;
                 }
@@ -269,6 +269,7 @@ const UploadDemo: React.FC = (props) => {
   const handleChange = ({ fileList: newFileList }) => {
     resetData();
     setFileList([]);
+    setFileChunkList([]);
   };
 
   const mergeRequest = async (fileOption) => {
