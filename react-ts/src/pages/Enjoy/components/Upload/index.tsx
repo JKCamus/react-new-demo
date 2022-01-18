@@ -216,16 +216,19 @@ const UploadDemo: React.FC = (props) => {
         formData.append('hash', hash);
         formData.append('filename', fileOption.fileName);
         formData.append('fileHash', fileOption.fileHash);
-        const cancelToken = createCancelAction(item);
-        const onUploadProgress = createProgressHandler(updateChunk, index);
-        return uploadChunksTest1(formData, {
-          onUploadProgress,
-          cancelToken,
-        });
+        // const cancelToken = createCancelAction(item);
+        // const onUploadProgress = createProgressHandler(updateChunk, index);
+        // return uploadChunksTest1(formData, {
+        //   onUploadProgress,
+        //   cancelToken,
+        // });
         // return uploadChunksTest(formData, { onUploadProgress, cancelToken });
-        // return { formData, index, status: Status.wait, retryNum: 0 };
+        return { formData, index, status: Status.wait, retryNum: 0 };
       });
-    await Promise.all(requests);
+    const res = await controlRequest(requests, updateChunk);
+    console.log('res--------', res);
+
+    // await Promise.all(requests);
   };
   // 获取cancelToken
   const createCancelAction = (chunk: IChunk) => {
@@ -246,18 +249,14 @@ const UploadDemo: React.FC = (props) => {
             (r) => r.status === Status.wait || (r.status === Status.error && r.retryNum <= 2),
           );
           if (!requestData) continue;
-
           requestData.status = requestData.status = Status.uploading;
           const formData = requestData.formData;
           const index = requestData.index;
           // 任务不能仅仅累加获取，而是要根据状态
           // wait和error的可以发出请求 方便重试
-          request({
-            url: 'http://localhost:3000',
-            data: formData,
-            onProgress: createProgressHandler(chunkData, index),
-            requests: requestList,
-          })
+          const cancelToken = createCancelAction(chunkData[index]);
+          const onUploadProgress = createProgressHandler(chunkData, index);
+          uploadChunksTest1(formData, { cancelToken, onUploadProgress })
             .then(() => {
               requestData.status = Status.done;
               max += 1;
@@ -269,20 +268,22 @@ const UploadDemo: React.FC = (props) => {
               }
             })
             .catch((error) => {
-              console.log('重试~~~~', error);
-              max += 1;
-              requestData.status = Status.error;
-              chunkData[index].process = 0;
-              setFileChunkList(cloneDeep(chunkData));
-              if (typeof requestData['retryNum'] !== 'number') {
-                requestData['retryNum'] = 0;
+              if (!axios.isCancel(error)) {
+                console.log('重试~~~~', error);
+                max += 1;
+                requestData.status = Status.error;
+                chunkData[index].process = 0;
+                setFileChunkList(cloneDeep(chunkData));
+                if (typeof requestData['retryNum'] !== 'number') {
+                  requestData['retryNum'] = 0;
+                }
+                requestData['retryNum'] += 1;
+                if (requestData['retryNum'] > 2) {
+                  counter++; // 把当前切块 3 次失败后，当做是成功了，不再重试发送了
+                  chunkData[index].process = -1; // 更改上传失败进度条
+                }
+                start();
               }
-              requestData['retryNum'] += 1;
-              if (requestData['retryNum'] > 2) {
-                counter++; // 把当前切块 3 次失败后，当做是成功了，不再重试发送了
-                chunkData[index].process = -1; // 更改上传失败进度条
-              }
-              start();
             });
         }
       };
@@ -308,8 +309,8 @@ const UploadDemo: React.FC = (props) => {
   };
 
   const mergeRequest = async (fileOption) => {
+    const mergeData = { size: SIZE, fileHash: fileOption.fileHash, filename: fileOption.fileName };
     try {
-      const mergeData = { size: SIZE, fileHash: fileOption.fileHash, filename: fileOption.fileName };
       await mergeChunks(mergeData);
       message.success('上传成功');
       setFakeStatus(Status.wait);
