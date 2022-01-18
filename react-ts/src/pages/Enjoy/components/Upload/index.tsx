@@ -9,8 +9,6 @@ import { cloneDeep } from 'lodash';
 import { verifyUploadTest, mergeChunks, uploadChunksTest } from 'src/http/upload';
 import axios, { AxiosRequestConfig } from 'axios';
 
-import { CancelToken } from 'src/http/request';
-
 interface IRequest {
   url: string;
   method?: string;
@@ -102,7 +100,8 @@ const UploadDemo: React.FC = (props) => {
   const resetData = () => {
     if (fileChunkList) {
       fileChunkList.forEach((chunkItem) => {
-        chunkItem.cancel(chunkItem.hash);
+        console.log('chunkItem', chunkItem);
+        chunkItem?.cancel && chunkItem.cancel(chunkItem.hash);
       });
       if (container.worker) {
         setContainer({ ...container, worker: { ...container?.worker, onmessage: null } });
@@ -112,7 +111,7 @@ const UploadDemo: React.FC = (props) => {
 
   const handleResume = async () => {
     setFakeStatus(Status.uploading);
-    const { uploadedList } = await verifyUpload({ filename: container.file.name, fileHash: container.hash });
+    const { uploadedList = [] } = await verifyUpload({ filename: container.file.name, fileHash: container.hash });
 
     const fileOption = {
       fileName: container.file.name,
@@ -145,13 +144,6 @@ const UploadDemo: React.FC = (props) => {
       setRequestList(requests);
     });
   };
-
-  // 获取cancelToken
-  // const createCancelAction = (chunk: IChunk) => {
-  //   const { cancel, token } = axios.CancelToken.source();
-  //   chunk.cancel = cancel;
-  //   return token;
-  // };
 
   // 生成文件切片
   const createFileChunk = (file, size = SIZE) => {
@@ -215,7 +207,11 @@ const UploadDemo: React.FC = (props) => {
 
   // 上传切片，同时过滤已上传的切片
   const uploadChunks = async (uploadedList = [], fileOption, chunkData) => {
-    const requests = chunkData
+    const updateChunk = chunkData.map((chunk) => ({
+      ...chunk,
+      percentage: uploadedList.includes(chunk.hash) ? 100 : 0,
+    }));
+    const requests = updateChunk
       .filter(({ hash }) => !uploadedList.includes(hash))
       .map((item) => {
         const { chunk, hash, index } = item;
@@ -224,16 +220,13 @@ const UploadDemo: React.FC = (props) => {
         formData.append('hash', hash);
         formData.append('filename', fileOption.fileName);
         formData.append('fileHash', fileOption.fileHash);
-
-        // const cancelToken = createCancelAction(item);
-        const { cancel, token } = CancelToken.source();
-        item.cancel = cancel;
-
-        const onUploadProgress = createProgressHandler(chunkData, index);
-        return uploadChunksTest(formData, { onUploadProgress, cancelToken: token });
+        const cancelToken = createCancelAction(item);
+        const onUploadProgress = createProgressHandler(updateChunk, index);
+        return uploadChunksTest1(formData, {
+          onUploadProgress,
+          cancelToken,
+        });
         // return uploadChunksTest(formData, { onUploadProgress, cancelToken });
-
-        uploadChunks;
         // return { formData, index, status: Status.wait, retryNum: 0 };
       });
 
@@ -254,6 +247,12 @@ const UploadDemo: React.FC = (props) => {
     // if (uploadedList.length + requests.length === chunkData.length) {
     //   await mergeRequest(fileOption);
     // }
+  };
+  // 获取cancelToken
+  const createCancelAction = (chunk: IChunk) => {
+    const { cancel, token } = axios.CancelToken.source();
+    chunk.cancel = cancel;
+    return token;
   };
 
   const controlRequest = async (requests, chunkData, limit = 3) => {
@@ -312,6 +311,33 @@ const UploadDemo: React.FC = (props) => {
     });
   };
 
+  // 创建每个chunk上传的progress监听函数
+  const createProgressHandler = (chunkData, index: number) => {
+    return (e) => {
+      setFileChunkList((pre) => {
+        const newChunkList = [...chunkData];
+        if (newChunkList[index]) {
+          newChunkList[index].percentage = parseInt(String((e.loaded / e.total) * 100), 10);
+          return newChunkList;
+        }
+      });
+    };
+  };
+  const handleChange = ({ fileList: newFileList }) => {
+    resetData();
+    setFileList([]);
+    // const { status } = info.file;
+    // console.log('FileList', info.file);
+    // if (status !== 'uploading') {
+    //   console.log(info.file, info.fileList);
+    // }
+    // if (status === 'done') {
+    //   message.success(`${info.file.name} file uploaded successfully.`);
+    // } else if (status === 'error') {
+    //   message.error(`${info.file.name} file upload failed.`);
+    // }
+  };
+
   const mergeRequest = async (fileOption) => {
     try {
       const mergeData = { size: SIZE, fileHash: fileOption.fileHash, filename: fileOption.fileName };
@@ -329,35 +355,6 @@ const UploadDemo: React.FC = (props) => {
     const res = await verifyUploadTest({ filename, fileHash });
     return res;
   };
-  // 创建每个chunk上传的progress监听函数
-  const createProgressHandler = (chunkData, index: number) => {
-    return (e) => {
-      setFileChunkList((pre) => {
-        const newChunkList = [...chunkData];
-        if (newChunkList[index]) {
-          newChunkList[index].percentage = parseInt(String((e.loaded / e.total) * 100), 10);
-          return newChunkList;
-        }
-      });
-    };
-  };
-  const handleChange = ({ fileList: newFileList }) => {
-    resetData();
-
-    setFileList([]);
-
-    // const { status } = info.file;
-    // console.log('FileList', info.file);
-    // if (status !== 'uploading') {
-    //   console.log(info.file, info.fileList);
-    // }
-    // if (status === 'done') {
-    //   message.success(`${info.file.name} file uploaded successfully.`);
-    // } else if (status === 'error') {
-    //   message.error(`${info.file.name} file upload failed.`);
-    // }
-  };
-
   const onDrop = (e) => {
     // console.log('Dropped files', e.dataTransfer.files);
   };

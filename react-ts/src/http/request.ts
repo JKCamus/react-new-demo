@@ -4,7 +4,6 @@ import { message } from 'antd';
 import { BASE_URL, TIMEOUT } from './config';
 
 export type { AxiosRequestConfig };
-export const CancelToken = axios.CancelToken;
 
 const instance = axios.create({
   baseURL: BASE_URL,
@@ -36,8 +35,6 @@ instance.interceptors.request.use(
  */
 instance.interceptors.response.use(
   (res) => {
-    console.log('config1', res);
-
     return res.data;
   },
   (err) => {
