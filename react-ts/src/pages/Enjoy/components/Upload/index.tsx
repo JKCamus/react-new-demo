@@ -211,6 +211,11 @@ const UploadDemo: React.FC = (props) => {
       ...chunk,
       percentage: uploadedList.includes(chunk.hash) ? 100 : 0,
     }));
+    if (chunkData.length === uploadedList.length) {
+      setFileChunkList(updateChunk);
+      return;
+    }
+
     const requests = updateChunk
       .filter(({ hash }) => !uploadedList.includes(hash))
       .map((item) => {
