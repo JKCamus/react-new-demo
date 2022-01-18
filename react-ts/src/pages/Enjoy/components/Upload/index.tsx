@@ -74,13 +74,6 @@ const UploadDemo: React.FC = (props) => {
     const loaded = fileChunkList.map((item) => item.size * item.percentage).reduce((acc, cur) => acc + cur, 0);
     const percentage = parseInt((loaded / container.file?.size).toFixed(2), 10);
     percentage !== NaN && setUploadPercentage(percentage);
-    // if (percentage === 100) {
-    //   const fileOption = {
-    //     fileName: container.file.name,
-    //     fileHash: container.hash,
-    //   };
-    //   mergeRequest(fileOption);
-    // }
   }, [fileChunkList]);
 
   const handlePause = () => {
@@ -109,31 +102,6 @@ const UploadDemo: React.FC = (props) => {
       fileHash: container.hash,
     };
     await uploadChunks(uploadedList, fileOption, fileChunkList);
-  };
-
-  const request = ({ url, method = 'post', data, headers = {}, onProgress = (e) => e, requests }: IRequest) => {
-    return new Promise((resolve) => {
-      const xhr = new XMLHttpRequest();
-      xhr.timeout = 10000;
-      xhr.upload.onprogress = onProgress;
-      xhr.open(method, url);
-      Object.keys(headers).forEach((key) => xhr.setRequestHeader(key, headers[key]));
-      xhr.send(data);
-      xhr.onload = (e: any) => {
-        // 将请求成功的 xhr 从列表中删除
-        if (requestList) {
-          const xhrIndex = requestList.findIndex((item) => item === xhr);
-          requestList.splice(xhrIndex, 1);
-          setRequestList(requestList);
-        }
-        resolve({
-          data: e.target.response,
-        });
-      };
-      // 暴露当前 xhr 给外部
-      requests?.push(xhr);
-      setRequestList(requests);
-    });
   };
 
   // 生成文件切片
@@ -218,21 +186,12 @@ const UploadDemo: React.FC = (props) => {
         formData.append('hash', hash);
         formData.append('filename', fileOption.fileName);
         formData.append('fileHash', fileOption.fileHash);
-        // const cancelToken = createCancelAction(item);
-        // const onUploadProgress = createProgressHandler(updateChunk, index);
-        // return uploadChunksTest1(formData, {
-        //   onUploadProgress,
-        //   cancelToken,
-        // });
-        // return uploadChunksTest(formData, { onUploadProgress, cancelToken });
         return { formData, index, status: Status.wait, retryNum: 0 };
       });
     const counter = await controlRequest(requests, updateChunk);
     if (counter && chunkData.length === counter + uploadedList.length) {
       await mergeRequest(fileOption);
     }
-
-    // await Promise.all(requests);
   };
   // 获取cancelToken
   const createCancelAction = (chunk: IChunk) => {
