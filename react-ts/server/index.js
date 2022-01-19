@@ -1,28 +1,34 @@
-import Koa from 'koa';
-import logger from 'koa-logger';
-import bodyParser from 'koa-bodyparser';
-import cors from 'koa2-cors';
-import corsConfig from './corsConfig';
-import routes from './router';
-import schedule from './schedule';
+const Controller = require('./controller');
+const http = require('http');
+const server = http.createServer();
 
-const app = new Koa();
-const isProduction = process.env.NODE_ENV !== 'development';
+const controller = new Controller();
 
-// 日志
-!isProduction && app.use(logger());
+server.on('request', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  if (req.method === 'OPTIONS') {
+    res.status = 200;
+    res.end();
+    return;
+  }
+  if (req.url === '/verify') {
+    await controller.handleVerifyUpload(req, res);
+    return;
+  }
 
-// CORS 跨域配置
-app.use(cors(corsConfig));
+  if (req.url === '/merge') {
+    await controller.handleMerge(req, res);
+    return;
+  }
 
-// koa-bodyparser
-app.use(bodyParser());
+  if (req.url === '/uploadChunks') {
+    await controller.handleFormData(req, res);
+  }
+});
 
-// add router middleware:
-app.use(routes());
+process.on('uncaughtException', (err) => {
+  console.error(err);
+});
 
-// 定时器，用于定时清除文件碎片
-schedule();
-
-app.listen(9100);
-console.log('koa 服务启动成功!');
+server.listen(3000, () => console.log('正在监听 3000 端口'));

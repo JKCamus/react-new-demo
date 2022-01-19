@@ -8,7 +8,7 @@ import { InboxOutlined } from '@ant-design/icons';
 import { cloneDeep } from 'lodash';
 import { verifyUploadTest, mergeChunks, uploadChunksTest } from 'src/http/upload';
 import axios, { AxiosRequestConfig } from 'axios';
-
+import classnames from 'classnames';
 interface IRequest {
   url: string;
   method?: string;
@@ -18,6 +18,13 @@ interface IRequest {
   requests?: any;
 }
 
+const Status = {
+  wait: 'wait',
+  pause: 'pause',
+  uploading: 'uploading',
+  error: 'error',
+  done: 'done',
+};
 interface IChunk {
   // 切片源文件
   chunk: Blob;
@@ -26,22 +33,15 @@ interface IChunk {
   // 文件名
   fileName: string;
   // 请求进度
-  progress: number;
+  percentage: number;
   // 下标，标记哪些分片包已上传完成
   index: number;
   // abort上传请求
   cancel: () => void;
+  status: typeof Status;
 }
 
 const SIZE = 20 * 1024 * 1024; // 切片大小
-
-const Status = {
-  wait: 'wait',
-  pause: 'pause',
-  uploading: 'uploading',
-  error: 'error',
-  done: 'done',
-};
 
 const uploadChunksTest1 = (param: FormData, config: AxiosRequestConfig) =>
   axios.post('http://localhost:3000/uploadChunks', param, config);
@@ -74,6 +74,15 @@ const UploadDemo: React.FC = (props) => {
     const loaded = fileChunkList.map((item) => item.size * item.percentage).reduce((acc, cur) => acc + cur, 0);
     const percentage = parseInt((loaded / container.file?.size).toFixed(2), 10);
     percentage !== NaN && setUploadPercentage(percentage);
+    const doneChunks = fileChunkList.filter(({ status }) => status === Status.done);
+    const fileChunksLen = fileChunkList.length;
+    if (fileChunksLen > 0 && doneChunks.length === fileChunksLen) {
+      const fileOption = {
+        fileName: container?.file?.name,
+        fileHash: container?.hash,
+      };
+      mergeRequest(fileOption);
+    }
   }, [fileChunkList]);
 
   const handlePause = () => {
@@ -84,7 +93,6 @@ const UploadDemo: React.FC = (props) => {
   const resetData = () => {
     if (fileChunkList) {
       fileChunkList.forEach((chunkItem) => {
-        console.log('chunkItem', chunkItem);
         chunkItem?.cancel && chunkItem.cancel(chunkItem.hash);
       });
       if (container.worker) {
@@ -189,15 +197,16 @@ const UploadDemo: React.FC = (props) => {
         return { formData, index, status: Status.wait, retryNum: 0 };
       });
     const counter = await controlRequest(requests, updateChunk);
-    if (counter && chunkData.length === counter + uploadedList.length) {
-      await mergeRequest(fileOption);
-    }
   };
   // 获取cancelToken
   const createCancelAction = (chunk: IChunk) => {
     const { cancel, token } = axios.CancelToken.source();
     chunk.cancel = cancel;
     return token;
+  };
+
+  const handleCancel = (chunk: IChunk, cancel: any) => {
+    chunk.cancel = cancel;
   };
 
   const controlRequest = async (requests, chunkData, limit = 3) => {
@@ -217,11 +226,16 @@ const UploadDemo: React.FC = (props) => {
           const index = requestData.index;
           // 任务不能仅仅累加获取，而是要根据状态
           // wait和error的可以发出请求 方便重试
-          const cancelToken = createCancelAction(chunkData[index]);
+          // const cancelToken = createCancelAction(chunkData[index]);
+          const onCancel = (cancel) => {
+            chunkData[index].cancel = cancel;
+          };
           const onUploadProgress = createProgressHandler(chunkData, index);
-          uploadChunksTest1(formData, { cancelToken, onUploadProgress })
+          // uploadChunksTest1(formData, { cancelToken, onUploadProgress })
+          uploadChunksTest(formData, { onUploadProgress, onCancel })
             .then(() => {
               requestData.status = Status.done;
+              chunkData[index].status = Status.done;
               max += 1;
               counter += 1;
               if (counter === len) {
@@ -235,16 +249,17 @@ const UploadDemo: React.FC = (props) => {
                 console.log('重试~~~~', error);
                 max += 1;
                 requestData.status = Status.error;
-                chunkData[index].process = 0;
-                setFileChunkList(chunkData);
+                chunkData[index].percentage = 0;
                 if (typeof requestData['retryNum'] !== 'number') {
                   requestData['retryNum'] = 0;
                 }
                 requestData['retryNum'] += 1;
                 if (requestData['retryNum'] > 2) {
                   counter++; // 把当前切块 3 次失败后，当做是成功了，不再重试发送了
-                  chunkData[index].process = -1; // 更改上传失败进度条
+                  chunkData[index].percentage = -1; // 更改上传失败进度条
+                  chunkData[index].status = Status.error;
                 }
+                setFileChunkList(chunkData);
                 start();
               }
             });
@@ -315,6 +330,20 @@ const UploadDemo: React.FC = (props) => {
     },
   ];
 
+  const cubeClass = (chunk: IChunk) => {
+    const val = chunk.percentage;
+    switch (true) {
+      case val > 0 && val < 100:
+        return 'uploading';
+      case val < 0:
+        return 'error';
+      case val === 100:
+        return 'success';
+      default:
+        break;
+    }
+  };
+
   return (
     <div>
       <UploadWrapper>
@@ -342,18 +371,32 @@ const UploadDemo: React.FC = (props) => {
           </Button>
         </div>
       </UploadWrapper>
-
       <span>计算hash进度</span>
       <Progress percent={hashPercentage} />
       <span>上传</span>
       <Progress percent={uploadPercentage} />
-      <Table
-        size="small"
-        columns={columns}
-        dataSource={fileChunkList}
-        scroll={{ x: 1500, y: 300 }}
-        pagination={false}
-      ></Table>
+      <UploadShowWrapper>
+        <div className="cube-container" style={{ width: `${Math.ceil(Math.sqrt(fileChunkList.length)) * 22}px` }}>
+          {fileChunkList.map((chunk, index) => (
+            <span
+              className={classnames(cubeClass(chunk), 'cube')}
+              key={chunk.key}
+              style={{ height: `${chunk.percentage}%` }}
+            >
+              {index}
+            </span>
+          ))}
+        </div>
+        {/* <div className="ant-table">
+          <Table
+            size="small"
+            columns={columns}
+            dataSource={fileChunkList}
+            scroll={{ x: 150, y: 300 }}
+            pagination={false}
+          ></Table>
+        </div> */}
+      </UploadShowWrapper>
     </div>
   );
 };
@@ -362,4 +405,39 @@ export default UploadDemo;
 
 const UploadWrapper = styled.div`
   display: flex;
+`;
+
+const UploadShowWrapper = styled.div`
+  margin-top: 20px;
+  /* display: flex; */
+  .ant-table {
+    flex: 1;
+  }
+  .cube-container {
+    width: 100px;
+    overflow: hidden;
+    color: #67c23a;
+  }
+
+  .cube {
+    width: 22px;
+    height: 20px;
+    line-height: 20px;
+    border: 1px solid black;
+    background: #eee;
+    float: left;
+    text-align: center;
+    box-sizing: border-box;
+    &.success {
+      background: #67c23a;
+    }
+
+    &.uploading {
+      background: #409eff;
+    }
+
+    &.error {
+      background: #f56c6c;
+    }
+  }
 `;

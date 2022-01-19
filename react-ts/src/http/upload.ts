@@ -1,4 +1,7 @@
 import request, { AxiosRequestConfig } from './request';
+import axios from 'axios';
+const CancelToken = axios.CancelToken;
+
 interface IChunk {
   // 切片源文件
   chunk: Blob;
@@ -24,7 +27,7 @@ export const verifyUploadTest = ({ filename, fileHash }) =>
     data: JSON.stringify({ filename, fileHash }),
   });
 
-export const uploadChunksTest = (params: FormData, config) => {
+export const uploadChunksTest = (params: FormData, { onUploadProgress, onCancel }) => {
   return request({
     url: '/uploadChunks',
     method: 'POST',
@@ -32,7 +35,8 @@ export const uploadChunksTest = (params: FormData, config) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-    ...config,
+    onUploadProgress,
+    cancelToken: new CancelToken((c) => onCancel(c)),
   });
 };
 
