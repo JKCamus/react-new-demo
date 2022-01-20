@@ -44,8 +44,6 @@ interface IChunk {
 
 const SIZE = 20 * 1024 * 1024; // 切片大小
 
-const uploadChunksTest1 = (param: FormData, config: AxiosRequestConfig) =>
-  axios.post('http://localhost:3000/uploadChunks', param, config);
 
 const UploadDemo: React.FC = (props) => {
   const [status, setStatus] = useState(Status);
@@ -204,17 +202,7 @@ const UploadDemo: React.FC = (props) => {
         formData.append('fileHash', fileOption.fileHash);
         return { formData, index, status: Status.wait, retryNum: 0 };
       });
-    const counter = await controlRequest(requests, updateChunk);
-  };
-  // 获取cancelToken
-  const createCancelAction = (chunk: IChunk) => {
-    const { cancel, token } = axios.CancelToken.source();
-    chunk.cancel = cancel;
-    return token;
-  };
-
-  const handleCancel = (chunk: IChunk, cancel: any) => {
-    chunk.cancel = cancel;
+     await controlRequest(requests, updateChunk);
   };
 
   const controlRequest = async (requests, chunkData, limit = 3) => {
