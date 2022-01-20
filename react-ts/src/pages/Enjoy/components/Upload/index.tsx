@@ -1,7 +1,8 @@
 /* eslint-disable */
 import React, { useEffect, useState } from 'react';
 import { Upload, message, Progress, Table, Button } from 'antd';
-import { useReactive } from 'utils/hooks';
+import { asyncRetry } from 'utils/asyncRetry';
+
 import styled from 'styled-components';
 const { Dragger } = Upload;
 import { InboxOutlined } from '@ant-design/icons';
@@ -10,6 +11,7 @@ import { verifyUploadTest, mergeChunks, uploadChunksTest } from 'src/http/upload
 import axios, { AxiosRequestConfig } from 'axios';
 import classnames from 'classnames';
 import { useUpdateEffect } from 'ahooks';
+
 interface IRequest {
   url: string;
   method?: string;
@@ -43,7 +45,6 @@ interface IChunk {
 }
 
 const SIZE = 20 * 1024 * 1024; // 切片大小
-
 
 const UploadDemo: React.FC = (props) => {
   const [status, setStatus] = useState(Status);
@@ -81,7 +82,7 @@ const UploadDemo: React.FC = (props) => {
         fileName: container?.file?.name,
         fileHash: container?.hash,
       };
-      mergeRequest(fileOption);
+      asyncRetry(() => mergeRequest(fileOption), { errorMessage: '重试3次后合并失败!' });
     }
   }, [fileChunkList]);
 
@@ -202,7 +203,7 @@ const UploadDemo: React.FC = (props) => {
         formData.append('fileHash', fileOption.fileHash);
         return { formData, index, status: Status.wait, retryNum: 0 };
       });
-     await controlRequest(requests, updateChunk);
+    await controlRequest(requests, updateChunk);
   };
 
   const controlRequest = async (requests, chunkData, limit = 3) => {
@@ -290,7 +291,7 @@ const UploadDemo: React.FC = (props) => {
       message.success('上传成功');
       setFakeStatus(Status.wait);
     } catch (error) {
-      message.success('上传成功失败');
+      throw error;
     }
   };
 

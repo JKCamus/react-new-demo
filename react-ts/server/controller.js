@@ -61,7 +61,7 @@ const createUploadedList = async (fileHash) =>
 module.exports = class {
   // 合并切片
   async handleMerge(req, res) {
-    if (Math.random() < 0.5) {
+    if (Math.random() < 0.8) {
       // 概率报错
       console.log('合并报错了');
       res.statusCode = 500;
