@@ -9,6 +9,7 @@ import { cloneDeep } from 'lodash';
 import { verifyUploadTest, mergeChunks, uploadChunksTest } from 'src/http/upload';
 import axios, { AxiosRequestConfig } from 'axios';
 import classnames from 'classnames';
+import { useUpdateEffect } from 'ahooks';
 interface IRequest {
   url: string;
   method?: string;
@@ -76,6 +77,7 @@ const UploadDemo: React.FC = (props) => {
     percentage !== NaN && setUploadPercentage(percentage);
     const doneChunks = fileChunkList.filter(({ status }) => status === Status.done);
     const fileChunksLen = fileChunkList.length;
+
     if (fileChunksLen > 0 && doneChunks.length === fileChunksLen) {
       const fileOption = {
         fileName: container?.file?.name,
@@ -84,6 +86,12 @@ const UploadDemo: React.FC = (props) => {
       mergeRequest(fileOption);
     }
   }, [fileChunkList]);
+
+  useUpdateEffect(() => {
+    if (fakeUploadPercentage < uploadPercentage) {
+      setFakeUploadPercentage(uploadPercentage);
+    }
+  }, [uploadPercentage]);
 
   const handlePause = () => {
     setFakeStatus(Status.pause);
@@ -367,14 +375,14 @@ const UploadDemo: React.FC = (props) => {
         <div>
           <Button onClick={handlePause}>暂停</Button>
           <Button type="primary" onClick={handleResume}>
-            恢复
+            恢复/重试
           </Button>
         </div>
       </UploadWrapper>
-      <span>计算hash进度</span>
+      <span>计算hash进度：</span>
       <Progress percent={hashPercentage} />
-      <span>上传</span>
-      <Progress percent={uploadPercentage} />
+      <span>上传切片进度：</span>
+      <Progress percent={fakeUploadPercentage} />
       <UploadShowWrapper>
         <div className="cube-container" style={{ width: `${Math.ceil(Math.sqrt(fileChunkList.length)) * 22}px` }}>
           {fileChunkList.map((chunk, index) => (
@@ -405,6 +413,7 @@ export default UploadDemo;
 
 const UploadWrapper = styled.div`
   display: flex;
+  margin-bottom: 10px;
 `;
 
 const UploadShowWrapper = styled.div`
