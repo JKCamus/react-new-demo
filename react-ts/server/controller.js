@@ -61,13 +61,13 @@ const createUploadedList = async (fileHash) =>
 module.exports = class {
   // 合并切片
   async handleMerge(req, res) {
-    if (Math.random() < 0.8) {
-      // 概率报错
-      console.log('合并报错了');
-      res.statusCode = 500;
-      res.end();
-      return;
-    }
+    // if (Math.random() < 0.8) {
+    //   // 概率报错
+    //   console.log('合并报错了');
+    //   res.statusCode = 500;
+    //   res.end();
+    //   return;
+    // }
     const data = await resolvePost(req);
     const { fileHash, filename, size } = data;
     const ext = extractExt(filename);
