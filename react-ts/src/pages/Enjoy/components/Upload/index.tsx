@@ -205,7 +205,12 @@ const UploadDemo: React.FC = (props) => {
       });
     await controlRequest(requests, updateChunk);
   };
-
+  /**
+   * @description: 请求并发控制，错误重试
+   * @param {*} requests
+   * @param {*} chunkData
+   * @param {*} limit
+   */
   const controlRequest = async (requests, chunkData, limit = 3) => {
     return new Promise<number>((resolve, reject) => {
       const len = requests.length;
