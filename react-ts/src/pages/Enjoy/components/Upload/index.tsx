@@ -1,7 +1,8 @@
 /* eslint-disable */
 import React, { useEffect, useState } from 'react';
 import { Upload, message, Progress, Table, Button } from 'antd';
-import { useReactive } from 'utils/hooks';
+import { asyncRetry } from 'utils/asyncRetry';
+
 import styled from 'styled-components';
 const { Dragger } = Upload;
 import { InboxOutlined } from '@ant-design/icons';
@@ -9,6 +10,8 @@ import { cloneDeep } from 'lodash';
 import { verifyUploadTest, mergeChunks, uploadChunksTest } from 'src/http/upload';
 import axios, { AxiosRequestConfig } from 'axios';
 import classnames from 'classnames';
+import { useUpdateEffect } from 'ahooks';
+
 interface IRequest {
   url: string;
   method?: string;
@@ -43,7 +46,6 @@ interface IChunk {
 
 const SIZE = 20 * 1024 * 1024; // 切片大小
 
-
 const UploadDemo: React.FC = (props) => {
   const [status, setStatus] = useState(Status);
   const [fileList, setFileList] = useState([]);
@@ -74,14 +76,21 @@ const UploadDemo: React.FC = (props) => {
     percentage !== NaN && setUploadPercentage(percentage);
     const doneChunks = fileChunkList.filter(({ status }) => status === Status.done);
     const fileChunksLen = fileChunkList.length;
+
     if (fileChunksLen > 0 && doneChunks.length === fileChunksLen) {
       const fileOption = {
         fileName: container?.file?.name,
         fileHash: container?.hash,
       };
-      mergeRequest(fileOption);
+      asyncRetry(() => mergeRequest(fileOption), { errorMessage: '重试3次后合并失败!' });
     }
   }, [fileChunkList]);
+
+  useUpdateEffect(() => {
+    if (fakeUploadPercentage < uploadPercentage) {
+      setFakeUploadPercentage(uploadPercentage);
+    }
+  }, [uploadPercentage]);
 
   const handlePause = () => {
     setFakeStatus(Status.pause);
@@ -194,9 +203,14 @@ const UploadDemo: React.FC = (props) => {
         formData.append('fileHash', fileOption.fileHash);
         return { formData, index, status: Status.wait, retryNum: 0 };
       });
-     await controlRequest(requests, updateChunk);
+    await controlRequest(requests, updateChunk);
   };
-
+  /**
+   * @description: 请求并发控制，错误重试
+   * @param {*} requests
+   * @param {*} chunkData
+   * @param {*} limit
+   */
   const controlRequest = async (requests, chunkData, limit = 3) => {
     return new Promise<number>((resolve, reject) => {
       const len = requests.length;
@@ -282,7 +296,7 @@ const UploadDemo: React.FC = (props) => {
       message.success('上传成功');
       setFakeStatus(Status.wait);
     } catch (error) {
-      message.success('上传成功失败');
+      throw error;
     }
   };
 
@@ -355,14 +369,14 @@ const UploadDemo: React.FC = (props) => {
         <div>
           <Button onClick={handlePause}>暂停</Button>
           <Button type="primary" onClick={handleResume}>
-            恢复
+            恢复/重试
           </Button>
         </div>
       </UploadWrapper>
-      <span>计算hash进度</span>
+      <span>计算hash进度：</span>
       <Progress percent={hashPercentage} />
-      <span>上传</span>
-      <Progress percent={uploadPercentage} />
+      <span>上传切片进度：</span>
+      <Progress percent={fakeUploadPercentage} />
       <UploadShowWrapper>
         <div className="cube-container" style={{ width: `${Math.ceil(Math.sqrt(fileChunkList.length)) * 22}px` }}>
           {fileChunkList.map((chunk, index) => (
@@ -393,6 +407,7 @@ export default UploadDemo;
 
 const UploadWrapper = styled.div`
   display: flex;
+  margin-bottom: 10px;
 `;
 
 const UploadShowWrapper = styled.div`
