@@ -1,0 +1,28 @@
+
+@startuml
+
+title " "
+
+class Fish {
+    +fishType?:string
+    +swim()
+}
+
+class Cat {
+    +hasFeet:Bool
+    +playToy(doll:Doll)
+}
+
+
+class Animal{
+  +name?:string
+  #isPet:boolean
+  -state?:string
+  -age:number
+}
+
+Animal <|--Fish
+Animal <|--Cat
+
+
+@enduml

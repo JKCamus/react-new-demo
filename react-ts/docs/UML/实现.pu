@@ -1,0 +1,21 @@
+
+@startuml
+
+title " "
+
+
+
+class Doll {
+    +  body?: Body
+    +  cloth?: Cloth
+    + toyMoved()
+}
+
+interface ToyAction{
+  +toyMoved()
+}
+
+ToyAction <|.. Doll
+
+
+@enduml

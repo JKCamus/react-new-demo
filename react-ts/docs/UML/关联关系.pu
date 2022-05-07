@@ -1,0 +1,19 @@
+class Teacher {
+    -students:List<Student>
+    +teach()
+}
+
+
+class Student{
+  -teachers:List<Teacher>
+  -clourse:List<Course>
+  +study()
+}
+
+class Course{
+  -name:String
+  +outline()
+}
+
+Teacher -- Student
+Course<-- Student

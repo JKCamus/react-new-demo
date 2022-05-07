@@ -1,0 +1,17 @@
+@startuml
+
+title " "
+
+entity BusinessCard{
+    businessData?:{
+    cpn:component //木偶组件
+    cpnData, // 渲染木偶组件的数据
+  },
+  replaceData?:{
+    targetKey:string
+    targetField:string|number
+  },
+  isValid?:boolean
+}
+
+@enduml

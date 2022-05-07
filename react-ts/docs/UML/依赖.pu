@@ -1,0 +1,22 @@
+@startuml
+
+title " "
+
+
+
+class Programm {
+    -students:List<Student>
+    +teach():b
+}
+
+
+class Doll{
+  +body:Body
+  +cloth:Cloth
+  +toyMoved()
+}
+
+Doll <.. Cat
+
+
+@enduml
