@@ -1,0 +1,14 @@
+@startuml
+
+title "push通知类图"
+
+class NoticeCardManager{
+  -PushTemplate:Map
+  +formatPushMessage()
+  +showPush()
+  +callBack()
+
+}
+
+
+@enduml

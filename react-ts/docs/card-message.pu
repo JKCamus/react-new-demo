@@ -1,0 +1,40 @@
+@startuml
+
+title " "
+
+
+enum NoticeType {
+  Popup,
+  MsgCard,
+  Badge,
+}
+
+interface Strategy
+  {
+    msgType: '';
+    resolve: [
+      {
+        noticeType: NoticeType;
+        fn: () => void;
+      },
+    ];
+  }
+
+
+
+class NoticeCardBord{
++strategy:Strategy[]
++collapse()
++clear()
++onClick()
+}
+
+class NoticeCard{
+  +close()
+}
+
+
+
+
+
+@enduml

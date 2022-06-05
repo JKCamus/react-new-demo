@@ -1,0 +1,66 @@
+@startuml
+title " "
+
+class NoticeCardManager{
+  -msgDatum[]
+  -cardDatum[]
+  +getCardDatum()
+  +clearAll()
+  +closeCard()
+}
+
+class NoticeCard{
+-msgId:number
+-type:string
+-component:React.Component
++businessInitData:Object
++closeCard()
+}
+
+
+class OperationStrategyContext{
+-registerMap:Map<String,Strategy>
+-getValidKeys()
++registerStrategy(String,Strategy):void
++getStrategy(String):void
+}
+
+interface OperationStrategy{
++execute(msgDatum,masData)
+}
+
+class BaseArrayOpration{
+  - arr: T[]
+  +unShift(value:T):this
+  +delIndex(index:number):this
+}
+
+class SomeOperationStrategy{
+  +requster():void
+  +execute(msgDatum,masData)
+}
+
+NoticeCardManager o-- NoticeCard
+NoticeCardManager ..> OperationStrategyContext
+OperationStrategy --o OperationStrategyContext
+OperationStrategyContext <.. SomeOperationStrategy
+OperationStrategy  <|.. SomeOperationStrategy
+BaseArrayOpration <..SomeOperationStrategy
+
+class NoticeConfig{
+-registerMap:Map<String,Strategy>
++addCpnFn(msgType[],businessFn):void
++getCpnFn(msgtype):businessFn
+}
+
+
+
+class Business{
+  +requster():void
+  +businessFn(masData):config
+}
+
+SomeOperationStrategy ..> NoticeConfig
+NoticeConfig <.. Business
+
+@enduml

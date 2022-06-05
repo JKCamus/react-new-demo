@@ -1,0 +1,23 @@
+@startuml
+
+title "卡片通知类图"
+
+class NoticeCardManager{
+  -msgDatum[]
+  -cardDatum[]
+  +getCardDatum()
+  +clearAll()
+  +closeCard()
+}
+
+class NoticeCard{
+-msgId:number
+-type:string
+-component:React.Component
++businessInitData:Object
++closeCard()
+}
+NoticeCardManager o-- NoticeCard
+
+
+@enduml

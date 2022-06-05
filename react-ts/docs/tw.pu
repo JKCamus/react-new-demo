@@ -1,0 +1,49 @@
+@startuml
+
+title " "
+
+
+
+interface TreeData{
+type: string; // 消息类型&更新数据类型
+id: number; // 唯一id
+count: number;// 消息数
+pid: number;// 父元素id
+child?: TreeData[];// 关联子小红点
+}
+
+class BadgeContainer{
+ -calculateCount()
++count
++show
+}
+
+
+class BadgeComponentA{
++count
++show
+}
+class BadgeComponentB{
++count
++show
+}
+
+class Badge{
+  +setBadgeTree()
+  +updateBadge()
+  +read()
+  +inform()
+}
+
+interface IBadgeTree{
+messageType
+child?:IBadgeTree[]
+}
+
+TreeData<--[bold]--Badge
+IBadgeTree<--[dashed]--Badge
+TreeData <--[dashed]-- BadgeContainer
+BadgeContainer<|--[bold]--BadgeComponentA
+BadgeContainer<|--[bold]--BadgeComponentB
+
+@enduml

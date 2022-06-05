@@ -1,0 +1,47 @@
+@startuml
+
+title " "
+
+
+enum NoticeType {
+  Popup,
+  MsgCard,
+  Badge,
+}
+
+interface Strategy
+  {
+    msgType: '';
+    resolve: [
+      {
+        noticeType: NoticeType;
+        fn: () => void;
+      },
+    ];
+  }
+
+interface msg{
+  isRead
+  createTime
+  type
+  blockInfo
+}
+
+
+class BaseMessage{
+
+
+
+
+}
+
+
+
+
+
+msg  <--[dashed]-- BaseMessage
+
+NoticeType <--[dashed]--Strategy
+
+
+@enduml

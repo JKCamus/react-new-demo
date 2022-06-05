@@ -1,0 +1,34 @@
+@startuml
+title " "
+
+class NoticeCardManager{
+  -msgData[]
+  -cardData[]
+  +getCardData()
+  +clearAll()
+  +closeCard()
+}
+
+class NoticeCard{
+-msgId:number
+-cardId:number
+-[UniqueTagName]:UniqueTagValue
+-type:string
+-component:React.Component
++businessInitData:Object
++closeCard()
+}
+
+
+class NoticeCardConfig{
+-registerMap:Map<String,Config>
++addCpnFn(Config):void
++getCpnFn(msgtype):():Promise<BusinessData>
+}
+
+
+NoticeCardManager o-- NoticeCard
+NoticeCardManager ..> NoticeCardConfig
+
+
+@enduml
