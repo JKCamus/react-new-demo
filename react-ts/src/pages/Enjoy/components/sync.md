@@ -40,34 +40,55 @@ Function.prototype.myBind = function (context, ...args1) {
     return _this.apply(context, args1.concat(args2));
   };
 };
+```
 
-// 获取argument对象 类数组对象 不能调用数组方法
-function test1() {
-  console.log('获取argument对象 类数组对象 不能调用数组方法', arguments);
+```ts
+class LRUCache {
+  private caches = new Map<number, number>();
+  private capacity: number;
+  constructor(capacity: number) {
+    this.capacity = capacity;
+  }
+
+  get(key: number): number {
+    const val = this.caches.get(key);
+    if (val === undefined) {
+      return -1;
+    }
+    this.caches.delete(key);
+    this.caches.set(key, val);
+    return val;
+  }
+
+  put(key: number, value: number): void {
+    const val = this.caches.get(key);
+    if (val !== undefined) {
+      this.caches.delete(key);
+      this.caches.set(key, value);
+    }
+    if (this.capacity <= this.caches.size) {
+      const leastRecentlyUsedKey = this.caches.keys().next().value;
+      this.caches.delete(leastRecentlyUsedKey);
+    }
+    this.caches.set(key, value);
+  }
 }
+```
 
-// 获取参数数组  可以调用数组方法
-function test2(...args) {
-  console.log('获取参数数组  可以调用数组方法', args);
-}
-
-// 获取除第一个参数的剩余参数数组
-function test3(first, ...args) {
-  console.log('获取argument对象 类数组对象 不能调用数组方法', args);
-}
-
-// 透传参数
-function test4(first, ...args) {
-  fn(...args);
-  fn(...arguments);
-}
-
-function fn() {
-  console.log('透传', ...arguments);
-}
-
-test1(1, 2, 3);
-test2(1, 2, 3);
-test3(1, 2, 3);
-test4(1, 2, 3);
+```jsx
+var rightSideView = function (root) {
+  function dfs(root, step, res) {
+    if (root) {
+      if (res.length === step) {
+        res.push(root.val); // 当数组长度等于当前 深度 时, 把当前的值加入数组
+      }
+      dfs(root.right, step + 1, res); // 先从右边开始, 当右边没了, 再轮到左边
+      dfs(root.left, step + 1, res);
+    }
+  }
+  if (!root) return [];
+  let arr = [];
+  dfs(root, 0, arr);
+  return arr;
+};
 ```
