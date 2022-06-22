@@ -92,3 +92,48 @@ var rightSideView = function (root) {
   return arr;
 };
 ```
+
+```ts
+1. 数组类型
+[3,1,4,null,2]  1=》1
+
+var kthSmallest = function (root, k) {
+  const stack = [];
+  while (true) {
+    // 直到左叶子节点 没有左节点
+    while (root) {
+      stack.push(root); // 左节点依次入栈
+      root = root.left; // DFS 左节点
+    }
+    root = stack.pop();
+    // 巧妙条件：因为出栈的过程是升序的 故第k次出栈即为BST中第k个最小的元素
+    if (!--k) return root.val;
+    root = root.right; // DFS 左叶子节点的右节点
+  }
+};
+
+
+对象类型
+{5,3,7,2,4,6,8},3
+输出{4}
+
+返回{4}
+function KthNode(pRoot, k) {
+  if (!pRoot || k <= 0) return null;
+  let stack = [];
+  let count = 0;
+  while (pRoot || stack.length) {
+    if (pRoot) {
+      stack.push(pRoot);
+      pRoot = pRoot.left;
+    } else {
+      pRoot = stack.pop();
+      if (++count === k) {
+        return pRoot;
+      }
+      pRoot = pRoot.right;
+    }
+  }
+  return null;
+}
+```
