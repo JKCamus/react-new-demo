@@ -137,3 +137,17 @@ function KthNode(pRoot, k) {
   return null;
 }
 ```
+
+```ts
+var hasPathSum = function (root, targetSum) {
+  if (root === null) return false;
+  if (root.left === null && root.right === null) {
+    //1.刚开始遍历时
+    //2.递归中间 说明该节点不是叶子节点
+    return root.val === targetSum;
+  }
+  // sum = targetSum - root.val;
+  // 拆分成两个子树
+  return hasPathSum(root.left, targetSum - root.val) || hasPathSum(root.right, targetSum - root.val);
+};
+```
