@@ -254,3 +254,65 @@ var integerBreak = function (n) {
     return dp[n];
 };
 ```
+
+```ts
+// 输入：grid = [[1,3,1],[1,5,1],[4,2,1]]
+// 输出：7
+// 解释：因为路径 1→3→1→1→1 的总和最小。
+function minPathSum(grid: number[][]): number {
+  const dp = grid;
+
+  let row = grid.length,
+    col = grid[0].length;
+  for (let i = 1; i < row; i++) {
+    dp[i][0] += dp[i - 1][0];
+  }
+  for (let j = 1; j < col; j++) {
+    dp[0][j] += dp[0][j - 1];
+  }
+  for (let i = 1; i < row; i++) {
+    for (let j = 1; j < col; j++) {
+      dp[i][j] += Math.min(dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+  return dp[row - 1][col - 1];
+}
+```
+
+```ts
+// 分治的办法，将x^n次方划分为x^(n/2) * x^(n/2),每次划分一半下去。直到n === 1，这之间的过程我们可以用递归进行实现，而边境的判断条件就是当n===0时。
+// 时间复杂度分析，因为我们每次都是x(n/2) * x ^ (n / 4) * x ^ (n / 8) * ... * 1;
+// 所以时间复杂度为o(log n);
+var myPow = function (x, n) {
+  if (n === 0) {
+    return 1;
+  }
+  if (n < 0) {
+    return 1 / myPow(x, -n);
+  }
+  if (n % 2) {
+    return x * myPow(x, n - 1);
+  }
+  return myPow(x * x, n / 2);
+};
+```
+
+```jsx
+var numRescueBoats = function (people, limit) {
+  people.sort((a, b) => a - b);
+  let ans = 0,
+    left = 0, //左指针初始化在0的位置
+    right = people.length - 1; //右指针初始化在people.length - 1的位置
+  while (left <= right) {
+    //两指针向中间靠拢 遍历
+    //当people[left] + people[right--]) <= limit 表示左右两边的人可以一起坐船 然后让left++ right--
+    //如果两人坐不下，那只能让重的人先坐一条船 也就是让right--
+    if (people[left] + people[right--] <= limit) {
+      left++;
+    }
+
+    ans++;
+  }
+  return ans;
+};
+```
