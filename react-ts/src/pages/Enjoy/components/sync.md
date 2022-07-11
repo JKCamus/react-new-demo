@@ -1,3 +1,10 @@
+待办：
+
+1. 每天一题新的，两题旧的。需要有思路。那种看见思路就能写出来的。
+2. 待解题目梳理。
+3. 构建今年
+4. 项目储备
+
 ```ts
 Function.prototype.myCall = function (context = window, ...args) {
   if (this === Function.prototype) {
@@ -314,5 +321,100 @@ var numRescueBoats = function (people, limit) {
     ans++;
   }
   return ans;
+};
+```
+
+```ts
+// 输入：people = [3,5,3,4], limit = 5
+// 输出：4
+// 解释：4 艘船分别载 (3), (3), (4), (5)
+var guessNumber = function (n) {
+  let left = 1,
+    right = n;
+  while (left < right) {
+    const mid = Math.floor(left + (right - left) / 2);
+    if (guess(mid) <= 0) {
+      right = mid; //更新查找区间为[left, mid]
+    } else {
+      left = mid + 1; //更新查找区间为[mid+1, right]
+    }
+  }
+  //left == right为答案
+  return left;
+};
+```
+
+```ts
+号码转译;
+//输入：digits = "23"
+//输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+
+// 思路：深度优先遍历，遍历函数传入每一层形成的字符串和一个指向字符的位置指针，打给你指针的位置到达字符串的结尾时，将形成的字符串加入结果数组，递归的每一层遍历这一层的数字对应的字符，然后传入新的字符，指针向后移动一次，不断递归
+// 复杂度：时间复杂度O(3^m * 4^n)，m，n分别是三个字母和四个字母对应的数字个数。空间复杂度O(m+n)，递归栈的深度，最大为m+n
+var letterCombinations = (digits) => {
+  if (digits.length == 0) return [];
+  const res = [];
+  const map = {
+    //建立电话号码和字母的映射关系
+    2: 'abc',
+    3: 'def',
+    4: 'ghi',
+    5: 'jkl',
+    6: 'mno',
+    7: 'pqrs',
+    8: 'tuv',
+    9: 'wxyz',
+  };
+
+  const dfs = (curStr, i) => {
+    //curStr是递归每一层的字符串，i是扫描的指针
+    if (i > digits.length - 1) {
+      //边界条件，递归的出口
+      res.push(curStr); //其中一个分支的解推入res
+      return; //结束递归分支，进入另一个分支
+    }
+    const letters = map[digits[i]]; //取出数字对应的字母
+    for (const l of letters) {
+      //进入不同字母的分支
+      dfs(curStr + l, i + 1); //参数传入新的字符串，i右移，继续递归
+    }
+  };
+  dfs('', 0); // 递归入口，传入空字符串，i初始为0的位置
+  return res;
+};
+```
+
+```ts
+// 给定一个包含红色、白色和蓝色、共 n 个元素的数组 nums ，原地对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
+// 我们使用整数 0、 1 和 2 分别表示红色、白色和蓝色。
+// 必须在不使用库的sort函数的情况下解决这个问题。
+// 输入：nums = [2,0,2,1,1,0]
+// 输出：[0,0,1,1,2,2]
+
+/** 难点，原地算法
+ * @description: 双指针
+ * 1. 思路有点类似移动0
+ * 2. 因为三个数字，位置一定，也就是前面肯定是0后面肯定是2
+ * 3. 两枚指针，left在左边界，right在右边界。
+ * 4。当前（也算做一枚指针）,当前元素为0跟left元素交换位置，当前元素等于2跟right交换位置
+ * 5. 移动为当前元素到右边界为止
+ * @param {*} nums
+ */
+var sortColors = function (nums) {
+  const len = nums.length;
+  let left = 0,
+    right = len - 1,
+    curr = 0;
+  while (curr <= right) {
+    if (nums[curr] === 0) {
+      [nums[left], nums[curr]] = [nums[curr], nums[left]];
+      left++;
+    } else if (nums[curr] === 2) {
+      [nums[curr], nums[right]] = [nums[right], nums[curr]];
+      right--;
+    }
+    curr++;
+  }
+  return nums;
 };
 ```
