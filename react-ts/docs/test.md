@@ -241,9 +241,6 @@ noticeCpnProvider.addCpnConfig(NoticeTypes, component);
 
 卡片通知内说明
 
-
-
-
 ```ts
 
 // 不渲染
@@ -277,3 +274,113 @@ noticeCpnProvider.addCpnConfig(NoticeTypes, component);
 
 说明：
 在业务场景考虑时，提出新增 closeCards 的原因，是因为，当前场景关闭单张卡片已经足够了。与产品讨论，出现扩展场景的可能性较低且提供 closeCards 的成本较低。所以先提供关闭单张卡片的方法。
+
+```ts
+思路：深度优先遍历，遍历函数传入每一层形成的字符串和一个指向字符的位置指针，打给你指针的位置到达字符串的结尾时，将形成的字符串加入结果数组，递归的每一层遍历这一层的数字对应的字符，然后传入新的字符，指针向后移动一次，不断递归
+复杂度：时间复杂度O(3^m * 4^n)，m，n分别是三个字母和四个字母对应的数字个数。空间复杂度O(m+n)，递归栈的深度，最大为m+n
+
+//输入：digits = "23"
+//输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+var letterCombinations = (digits) => {
+    if (digits.length == 0) return [];
+    const res = [];
+    const map = {//建立电话号码和字母的映射关系
+        2: "abc",
+        3: "def",
+        4: "ghi",
+        5: "jkl",
+        6: "mno",
+        7: "pqrs",
+        8: "tuv",
+        9: "wxyz",
+    };
+
+    const dfs = (curStr, i) => {//curStr是递归每一层的字符串，i是扫描的指针
+        if (i > digits.length - 1) {//边界条件，递归的出口
+            res.push(curStr); //其中一个分支的解推入res
+            return; //结束递归分支，进入另一个分支
+        }
+        const letters = map[digits[i]]; //取出数字对应的字母
+        for (const l of letters) {
+            //进入不同字母的分支
+            dfs(curStr + l, i + 1); //参数传入新的字符串，i右移，继续递归
+        }
+    };
+    dfs("", 0); // 递归入口，传入空字符串，i初始为0的位置
+    return res;
+};
+
+const letterCombinations = (digits) => {
+  if (digits.length == 0) return [];
+  const res = [];
+  const map = { '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl', '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz' };
+  // dfs: 当前构建的字符串为curStr，现在“翻译”到第i个数字，基于此继续“翻译”
+  const dfs = (curStr, i) => {   // curStr是当前字符串，i是扫描的指针
+    if (i > digits.length - 1) { // 指针越界，递归的出口
+      res.push(curStr);          // 将解推入res
+      return;                    // 结束当前递归分支
+    }
+    const letters = map[digits[i]]; // 当前数字对应的字母
+    for (const letter of letters) { // 一个字母是一个选择，对应一个递归分支
+      dfs(curStr + letter, i + 1);  // 选择翻译成letter，生成新字符串，i指针右移继续翻译（递归）
+    }
+  };
+  dfs('', 0); // 递归的入口，初始字符串为''，从下标0开始翻译
+  return res;
+};
+
+```
+```ts
+// 给定一个包含红色、白色和蓝色、共 n 个元素的数组 nums ，原地对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
+
+// 我们使用整数 0、 1 和 2 分别表示红色、白色和蓝色。
+
+// 必须在不使用库的sort函数的情况下解决这个问题。
+// 输入：nums = [2,0,2,1,1,0]
+// 输出：[0,0,1,1,2,2]
+
+// 输入：nums = [2,0,1]
+// 输出：[0,1,2]
+// 头尾指针分别表示0的右边界和2的左边界
+// 如果当前元素等于0，和头指针元素互换
+// 等于2，和尾指针元素互换
+var sortColors = function(nums) {
+    let len = nums.length, cur = 0, p0 = 0, p1 = len -1
+    while(cur <= p1){
+        function swap(a,b){
+            let temp = nums[a]
+            nums[a] = nums[b]
+            nums[b] = temp
+        }
+        if(nums[cur] === 0){
+            swap(cur, p0)
+            cur ++
+            p0 ++
+        }else if(nums[cur] === 2){
+            swap(cur, p1)
+            p1 --
+        }else{
+            cur ++
+        }
+    }
+}
+```
+
+```ts
+// 输入：[7,1,5,3,6,4]
+// 输出：5
+// 解释：在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+//      注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格；同时，你不能在买入前卖出股票。
+
+// 股票低值，肯定在左侧，循环比较，获取左侧的最低值。
+
+// 输入：prices = [7,1,5,3,6,4]
+// 输出：7
+// 解释：在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5 - 1 = 4 。
+//      随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6 - 3 = 3 。
+//      总利润为 4 + 3 = 7 。
+
+// *只能用while循环，顺序执行while循环，得到波谷和波峰，取得一次利润
+//   i相当于拨轮，while循环通过拨动拨轮获得最低点和最高点
+//   尤其注意，越界问题
+```
