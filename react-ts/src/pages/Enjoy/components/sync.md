@@ -393,11 +393,12 @@ var letterCombinations = (digits) => {
 
 /** 难点，原地算法
  * @description: 双指针
+ *
  * 1. 思路有点类似移动0
  * 2. 因为三个数字，位置一定，也就是前面肯定是0后面肯定是2
  * 3. 两枚指针，left在左边界，right在右边界。
- * 4。当前（也算做一枚指针）,当前元素为0跟left元素交换位置，当前元素等于2跟right交换位置
- * 5. 移动为当前元素到右边界为止
+ * 4。当前（也算做一枚指针）,当前元素为0跟left元素交换位置，指针前一，当前元素等于2跟right交换位置，注意，此时，curr指针不前一。
+ * 5. 等于1的情况，指针前一
  * @param {*} nums
  */
 var sortColors = function (nums) {
@@ -409,12 +410,56 @@ var sortColors = function (nums) {
     if (nums[curr] === 0) {
       [nums[left], nums[curr]] = [nums[curr], nums[left]];
       left++;
+      curr++;
     } else if (nums[curr] === 2) {
       [nums[curr], nums[right]] = [nums[right], nums[curr]];
       right--;
+    } else {
+      curr++;
     }
-    curr++;
   }
   return nums;
 };
+```
+
+```jsx
+34;
+// 给你一个按照非递减顺序排列的整数数组 nums，和一个目标值 target。请你找出给定目标值在数组中的开始位置和结束位置。
+// 如果数组中不存在目标值 target，返回 [-1, -1]。
+// 你必须设计并实现时间复杂度为 O(log n) 的算法解决此问题。
+// 输入：nums = [5,7,7,8,8,10], target = 8
+// 输出：[3,4]
+
+/**
+ * @description: 简单，基于二分查找，改造
+ * 1. mid的公式很重要，别忘了
+ * 2. 首先通过二分查找得到mid位置
+ * 3. 最后两枚指针，去搜索startIndex和endIndex。这一步比较巧妙
+ * 通过nums[i]===nums[i-1]搞定
+ * @param {*} nums
+ * @param {*} target
+ */
+var searchRange = function (nums, target) {
+  let left = 0,
+    right = nums.length - 1,
+    mid;
+  while (left <= right) {
+    //二分查找target
+    mid = Math.floor(left + (right - left) / 2);
+    if (nums[mid] === target) break;
+    if (nums[mid] > target) right = mid - 1;
+    else left = mid + 1;
+  }
+  if (left > right) return [-1, -1];
+  let i = mid,
+    j = mid;
+  while (nums[i] === nums[i - 1]) i--; //向左尝试找相同的元素
+  while (nums[j] === nums[j + 1]) j++; //向右尝试找相同的元素
+  return [i, j];
+};
+// 找到目标值在数组中的右边界
+// 注意这里使用的是[left, right],
+// 两边都闭合的方式，需要注意
+// 1.循环结束条件 left <= right
+// 2.当找到目标值时区间向后进1位
 ```
