@@ -4,7 +4,7 @@
  * @Author: camus
  * @Date: 2021-09-17 16:06:56
  * @LastEditors: camus
- * @LastEditTime: 2021-10-15 08:49:16
+ * @LastEditTime: 2022-07-13 10:24:28
  */
 import { RedoOutlined } from '@ant-design/icons';
 import React, { useEffect, useRef, useState } from 'react';
@@ -162,6 +162,40 @@ const Verify: React.FC<IVerifyProp> = ({
     originXRef.current = e.clientX || e.touches[0].clientX;
     originYRef.current = e.clientY || e.touches[0].clientY;
     isMouseDownRef.current = true;
+  };
+
+  const minWindow = function (s, t) {
+    const map = new Map();
+    for (let i of t) {
+      map.has(i) ? map.set(i, map.get(i) + 1) : map.set(i, 1);
+    }
+    let left = 0,
+      right = 0,
+      res = '',
+      size = map.size;
+    while (right < s.length) {
+      const Rc = s[right];
+      if (map.has(Rc)) {
+        const Rv = map.get(Rc);
+        map.set(Rc, Rv - 1);
+        if (Rv === 0) size -= 1;
+      }
+      while (size === 0) {
+        const newRes = s.substring(left, right + 1);
+        if (!res || res.length > newRes) {
+          res = newRes;
+        }
+        const Lc = s[left];
+        if (map.has(Lc)) {
+          const Lv = map.get(Lc);
+          map.set(Lc, Lv + 1);
+          if (Lv === 0) size += 1;
+        }
+        left++;
+      }
+      right += 1;
+    }
+    return res;
   };
 
   const handleDragMove = (e: any) => {

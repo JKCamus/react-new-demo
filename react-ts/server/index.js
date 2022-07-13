@@ -31,4 +31,4 @@ process.on('uncaughtException', (err) => {
   console.error(err);
 });
 
-server.listen(3000, () => console.log('正在监听 3000 端口'));
+server.listen(8086, () => console.log('正在监听 8086 端口'));

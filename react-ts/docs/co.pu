@@ -1,0 +1,39 @@
+@startuml
+title " "
+
+class NoticeCardManager{
+  -cardData[]
+  +getCardData()
+  +clearAll()
+  +closeCard()
+  +replaceCard()
+}
+
+class NoticeCard{
+-msgId:number
+-cardId:number
+-type:CARD_NOTICE
+-component:React.Component
++currentMsgData:IMCardNotice
++preCardsData:ICards[]
++closeCard()
++replaceCard()
+}
+
+
+class Register{
+-registerMap:Map<String,Config>
++addRenderCallback(Config):void
++getRenderCallback(msgtype):():Promise<React.ReactElement>
+}
+
+class NoticeWindowManager{
+
+}
+
+
+NoticeCardManager o-- NoticeCard
+NoticeCardManager ..> Register
+NoticeCardManager ..>NoticeWindowManager
+
+@enduml

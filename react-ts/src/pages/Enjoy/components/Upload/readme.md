@@ -1,12 +1,3 @@
-<!--
- * @Description:
- * @version:
- * @Author: camus
- * @Date: 2022-01-21 16:59:27
- * @LastEditors: camus
- * @LastEditTime: 2022-01-21 17:01:17
--->
-
 ### 大文件上传 demo
 
 可以优化点如下：

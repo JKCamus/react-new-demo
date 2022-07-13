@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -21,11 +17,8 @@
     "baseUrl": ".",
     "experimentalDecorators": true,
     "downlevelIteration": true,
-    "isolatedModules": true
+    "isolatedModules": false
   },
   "extends": "./base-tsconfig.json",
-  "include": [
-    "src",
-    "global.d.ts"
-  ]
+  "include": ["src", "global.d.ts"]
 }

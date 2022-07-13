@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useEffect, useState } from 'react';
 import { Upload, message, Progress, Table, Button } from 'antd';
 import { asyncRetry } from 'utils/asyncRetry';
@@ -6,7 +5,7 @@ import { asyncRetry } from 'utils/asyncRetry';
 import styled from 'styled-components';
 const { Dragger } = Upload;
 import { InboxOutlined } from '@ant-design/icons';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isNaN } from 'lodash';
 import { verifyUploadTest, mergeChunks, uploadChunksTest } from 'src/http/upload';
 import axios, { AxiosRequestConfig } from 'axios';
 import classnames from 'classnames';
@@ -73,7 +72,7 @@ const UploadDemo: React.FC = (props) => {
     }
     const loaded = fileChunkList.map((item) => item.size * item.percentage).reduce((acc, cur) => acc + cur, 0);
     const percentage = parseInt((loaded / container.file?.size).toFixed(2), 10);
-    percentage !== NaN && setUploadPercentage(percentage);
+    isNaN(percentage) && setUploadPercentage(percentage);
     const doneChunks = fileChunkList.filter(({ status }) => status === Status.done);
     const fileChunksLen = fileChunkList.length;
 
@@ -145,6 +144,16 @@ const UploadDemo: React.FC = (props) => {
     });
   };
 
+  //   输入：s = "ADOBECODEBANC", t = "ABC"
+  // 输出："BANC"
+  //   1.创建左指针，右指针
+  // 2.将输入t的所有字符存入，map中
+  // 3.建立循环，直到右指针到s字符串长度结束
+  // 4.逐位移动右指针
+  // 5.如果need中有当前右指针的字符，need中当前右指针字符对应的value - 1
+  // 6.如果当前右指针字符对应的value === 0 needType -= 1
+  // 7.当needType === 0时候说明已经找到符合要求的子串开始处理左指针
+
   const handleUpload = async (option: any) => {
     const file = option.file as File;
     if (!file) return;
@@ -160,7 +169,7 @@ const UploadDemo: React.FC = (props) => {
       setFakeStatus(Status.wait);
       return;
     }
-    //hash 可以不要在这边写，在uploadChunk里面写
+    // hash 可以不要在这边写，在uploadChunk里面写
     const chunkData = chunkList.map(({ file }, index) => ({
       key: hash + '-' + index,
       fileHash: hash,
@@ -291,6 +300,7 @@ const UploadDemo: React.FC = (props) => {
 
   const mergeRequest = async (fileOption) => {
     const mergeData = { size: SIZE, fileHash: fileOption.fileHash, filename: fileOption.fileName };
+    // eslint-disable-next-line no-useless-catch
     try {
       await mergeChunks(mergeData);
       message.success('上传成功');

@@ -37,10 +37,10 @@ const mergeFileChunk = async (filePath, fileHash, size) => {
   );
   fse.rmdirSync(chunkDir); // 合并后删除保存切片的目录
   // 测试用，合并之后删除
-  setTimeout(() => {
-    const fileDir = path.resolve(UPLOAD_DIR, filePath);
-    fse.unlink(fileDir);
-  }, 2000);
+  // setTimeout(() => {
+  //   const fileDir = path.resolve(UPLOAD_DIR, filePath);
+  //   fse.unlink(fileDir);
+  // }, 2000);
 };
 
 const resolvePost = (req) =>
@@ -84,7 +84,7 @@ module.exports = class {
   async handleFormData(req, res) {
     const multipart = new multiparty.Form();
     multipart.parse(req, async (err, fields, files) => {
-      if (Math.random() < 0.1) {
+      if (Math.random() < 0.5) {
         // 概率报错
         console.log('概率报错了');
         res.statusCode = 500;
